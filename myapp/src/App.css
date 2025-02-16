@@ -1,49 +1,222 @@
-/* Global Styles */
+/* About Us Page Styles */
+.about-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 100vh;
+  padding: 80px 20px;
+  background-color: #0c1222; /* Dark Blue */
+  color: white;
+}
+
+.about-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #facc15; /* Yellow */
+  text-shadow: 2px 2px 10px rgba(255, 223, 0, 0.4);
+}
+
+.about-description {
+  font-size: 1.2rem;
+  max-width: 800px;
+  margin-top: 15px;
+  color: #d1d5db; /* Light Gray */
+}
+
+.about-section {
+  max-width: 900px;
+  margin-top: 40px;
+}
+
+.about-subtitle {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #facc15; /* Yellow */
+}
+
+.about-text {
+  font-size: 1.1rem;
+  margin-top: 10px;
+  color: #d1d5db;
+}
+
+.about-list {
+  font-size: 1.1rem;
+  list-style: none;
+  margin-top: 15px;
+  padding: 0;
+}
+
+.about-list li {
+  margin: 10px 0;
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #facc15; /* Yellow */
+  display: flex;
+  align-items: center;
+}
+
+.about-list li::before {
+  content: "✅";
+  margin-right: 10px;
+}
+
+.about-image{
+  width: 50%;
+  height: 50%;
+}
+
+
+
+/* Body and Overall Layout Fix */
 body {
   font-family: "Poppins", sans-serif;
   margin: 0;
   padding: 0;
   background-color: #000;
   color: white;
+  height: 100vh;
+  width: 100vw;
+  overflow-x: hidden;
 }
 
-/* Header Styles */
-.App-header {
-  width: 99%;
-  background: #111827; /* Dark blue */
-  padding: 20px 4px;
+/* Fix Header */
+.header {
+  width: 97%;
+  padding: 15px 20px;
   display: flex;
   align-items: center;
-  justify-content: space-between; /* Logo on left, navigation on right */
-  box-shadow: 0px 4px 8px rgba(255, 255, 255, 0.1);
+  justify-content: space-between;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  background-color: #0c1222; 
+  backdrop-filter: blur(10px);
 }
 
-/* Logo */
 .logo {
-  font-size: 1.8rem;
+  font-size: 20px;
   font-weight: 700;
-  color: #facc15; /* Yellow */
+  color: #facc15;
+  text-shadow: 2px 2px 10px rgba(255, 255, 0, 0.6);
 }
 
-/* Navigation - Moves content to the right */
-.nav-container {
-  display: flex;
-  flex-grow: 1;
-  justify-content: flex-end; /* Push navigation to the right */
-}
-
-nav {
+.nav {
   display: flex;
   gap: 20px;
 }
 
-nav a {
-  color: #facc15; /* Yellow */
+.nav a {
+  color: #facc15;
   font-weight: 600;
   text-decoration: none;
-  transition: color 0.3s ease-in-out;
+  transition: all 0.3s ease-in-out;
 }
 
-nav a:hover {
-  color: #fbbf24; /* Lighter yellow */
+.nav a:hover {
+  color: #fbbf24;
+}
+
+/* Fix Home Page Layout */
+.main {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: left;
+  background-image: url('https://eocortex.com/uploads/media/articleImage/04/3814-face.jpg?v=1-0');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+}
+
+.overlay {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+.content {
+  position: relative;
+  z-index: 10;
+}
+
+.title {
+  font-size: 3rem;
+  font-weight: bold;
+  color: #facc15;
+  text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.7);
+}
+
+.paragraph {
+  color: #d1d5db;
+  margin-top: 10px;
+  max-width: 600px;
+  font-size: 1.1rem;
+}
+
+/* Button Fix */
+.button {
+  margin-top: 20px;
+  background-color: #facc15;
+  color: black;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0px 4px 10px rgba(255, 255, 0, 0.6);
+  transition: all 0.3s ease-in-out;
+  border: none;
+}
+
+.button:hover {
+  background-color: #fbbf24;
+  transform: scale(1.05);
+}
+
+
+.main {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Move content to the left */
+  justify-content: center;
+  text-align: left;
+ /* Adjust the content's position */
+  background-image: linear-gradient(
+    to right, 
+    rgba(0, 0, 50, 0.7), 
+    rgba(0, 0, 50, 0.4)
+  ), 
+  url('https://eocortex.com/uploads/media/articleImage/04/3814-face.jpg?v=1-0');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+  color: white; /* Ensure text is readable */
+}
+
+.content {
+  max-width: 600px;
+  padding-left: 20px;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color:  #facc15; /* Light blue */
+}
+
+.paragraph {
+  font-size: 1.2rem;
+  line-height: 1.5;
+  color:  #ffffff; /* Softer blue for text */
 }
