@@ -10,7 +10,7 @@ body {
 /* Header Styles */
 .App-header {
   width: 99%;
-  background: black;
+  background: #111827; /* Dark blue */
   padding: 20px 4px;
   display: flex;
   align-items: center;
@@ -22,7 +22,7 @@ body {
 .logo {
   font-size: 1.8rem;
   font-weight: 700;
-  color: white;
+  color: #facc15; /* Yellow */
 }
 
 /* Navigation - Moves content to the right */
@@ -38,12 +38,12 @@ nav {
 }
 
 nav a {
-  color: white;
+  color: #facc15; /* Yellow */
   font-weight: 600;
   text-decoration: none;
   transition: color 0.3s ease-in-out;
 }
 
 nav a:hover {
-  color: #facc15;
+  color: #fbbf24; /* Lighter yellow */
 }

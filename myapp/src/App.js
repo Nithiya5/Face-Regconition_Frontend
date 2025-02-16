@@ -6,20 +6,21 @@ import Login from "./Login";
 const Header = () => {
   return (
     <header className="App-header">
-    <div className="logo">FaceRecognition</div>
-    <div className="nav-container">
+      <div className="logo">FaceRecognition</div>
+      <div className="nav-container">
         <nav>
-            <a href="#">Home</a>
-            <Link to="/login">Login</Link>
-            <a href="#">Register</a>
-            <a href="#">About Us</a>
-            <a href="#">IT Support</a>
+          {/* Use <Link> for navigation instead of <a href="#"> */}
+          <Link to="/">Home</Link>  
+          <Link to="/login">Login</Link>
+          <a href="#">Register</a>
+          <a href="#">About Us</a>
+          <a href="#">IT Support</a>
         </nav>
-    </div>
-</header>
-
+      </div>
+    </header>
   );
 };
+
 
 const Home = () => (
   <main className="relative flex flex-col items-center justify-center flex-grow px-6 py-16 text-white text-center">

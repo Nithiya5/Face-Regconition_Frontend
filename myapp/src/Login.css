@@ -6,7 +6,18 @@
     justify-content: center;
     background-color: #111827; /* Dark background */
   }
-  
+  .input-group input {
+    width: 100%; /* Makes input match the width of the button */
+    padding: 10px;
+    border-radius: 6px;
+    border: none;
+    background: #e5e7eb;
+    color: #000;
+    font-size: 14px;
+    margin-top: 5px;
+    box-sizing: border-box; /* Ensures padding doesn't affect width */
+}
+
   /* Form box */
   .login-box {
     background: rgba(255, 255, 255, 0.1); /* Transparent white effect */
