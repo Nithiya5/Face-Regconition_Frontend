@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TextField, Button, Box, Typography, Paper, Grid, MenuItem } from "@mui/material";
-import LoginImage from "../src/image/Login.png"; // Ensure you have a login image
+import LoginImage from "../src/image/image.png"; // Ensure you have a login image
 
 const Login = () => {
   const [email, setEmail] = useState("");
