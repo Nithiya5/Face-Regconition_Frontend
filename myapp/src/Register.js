@@ -1,9 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TextField, Button, Box, Typography, Paper, Grid } from "@mui/material";
-
-const RegisterImage =
-  "https://img.freepik.com/premium-vector/online-registration-sign-up-concept-flat-vector-illustration-young-male-cartoon-character-sitting-huge-smartphone-login-account-social-media-app-user-interface-secure-login_241107-1247.jpg";
+import Registerimage from "../src/image/Register.png"; // Ensure correct import
 
 const Register = () => {
   const [fullName, setFullName] = useState("");
@@ -45,8 +43,17 @@ const Register = () => {
         padding: 2,
       }}
     >
-      <Paper elevation={4} sx={{ borderRadius: 3, overflow: "hidden", width: "60%", backgroundColor: "#1f2937" }}>
-        <Grid container>
+      <Paper
+        elevation={4}
+        sx={{
+          borderRadius: 3,
+          overflow: "hidden",
+          width: "60%",
+          backgroundColor: "#1f2937",
+          display: "flex",
+        }}
+      >
+        <Grid container spacing={0}>
           {/* Left Side - Registration Form */}
           <Grid
             item
@@ -147,7 +154,7 @@ const Register = () => {
             xs={12}
             md={6}
             sx={{
-              display: { xs: "none", md: "flex" },
+              display: "flex",
               alignItems: "center",
               justifyContent: "center",
               padding: 2,
@@ -156,10 +163,10 @@ const Register = () => {
           >
             <Box
               component="img"
-              src={RegisterImage}
+              src={Registerimage} // Ensure correct import and usage
               alt="Register Illustration"
               sx={{
-                width: "80%",
+                width: "90%", // Adjusted width for better fit
                 height: "auto",
                 borderRadius: 2,
               }}

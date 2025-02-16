@@ -3,6 +3,7 @@ import { Routes, Route, Link } from "react-router-dom";
 import aboutImage from "../src/image/About.png";
 import Login from "./Login";
 import Register from "./Register";
+import AdminDashboard from "./AdminDashboard";
 import "./App.css"; 
 
 const Header = () => {
@@ -70,6 +71,7 @@ const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/about" element={<About />} />
+        <Route path="/admin-dashboard" element={<AdminDashboard />} />
       </Routes>
     </div>
   );
