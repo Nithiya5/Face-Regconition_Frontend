@@ -1,0 +1,73 @@
+/* Center the login form */
+.login-container {
+    display: flex;
+    min-height: 100vh;
+    align-items: center;
+    justify-content: center;
+    background-color: #111827; /* Dark background */
+  }
+  
+  /* Form box */
+  .login-box {
+    background: rgba(255, 255, 255, 0.1); /* Transparent white effect */
+    padding: 20px;
+    border-radius: 10px;
+    width: 320px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    text-align: center;
+  }
+  
+  /* Heading */
+  .login-box h2 {
+    font-size: 24px;
+    font-weight: bold;
+    color: #facc15; /* Yellow */
+    margin-bottom: 15px;
+  }
+  
+  /* Input fields */
+  .input-group {
+    margin-bottom: 12px;
+    text-align: left;
+  }
+  
+  .input-group label {
+    font-size: 14px;
+    color: #e5e7eb; /* Light gray */
+  }
+  
+  .input-group input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    border: none;
+    background: #e5e7eb; /* Light gray */
+    color: #000;
+    font-size: 14px;
+    margin-top: 5px;
+  }
+  
+  /* Error message */
+  .error-message {
+    color: #f87171; /* Red */
+    font-size: 12px;
+    margin-bottom: 10px;
+  }
+  
+  /* Login button */
+  .login-btn {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    background: #facc15; /* Yellow */
+    color: #000;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  
+  .login-btn:hover {
+    background: #fbbf24; /* Lighter yellow */
+  }
+  
