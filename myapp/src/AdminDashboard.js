@@ -55,35 +55,32 @@ const AdminDashboard = () => {
   };
 
   const captureImage = async () => {
-    if (capturedImages.length >= 5) {
-      alert("You can only capture up to 5 images.");
+    if (faceEmbeddings.length >= 10) {
+      alert("You can only capture up to 10 face embeddings.");
       return;
     }
-
+  
     const imageSrc = webcamRef.current.getScreenshot();
     if (imageSrc) {
       setCapturedImages((prevImages) => [...prevImages, imageSrc]);
-
+  
       try {
-        // Wait until models are loaded before performing face detection
         if (!isModelLoaded) {
           alert("Please wait for the models to load before capturing images.");
           return;
         }
-
-        // Convert the base64 image to a Blob using fetch
+  
         const blob = await (await fetch(imageSrc)).blob();
-
-        // Convert the Blob to an image using face-api.js
         const img = await faceapi.bufferToImage(blob);
-
-        // Detect the face and get landmarks and embeddings
-        const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
-        
-        if (detections) {
+        const detections = await faceapi.detectSingleFace(img)
+          .withFaceLandmarks()
+          .withFaceDescriptor();
+  
+        if (detections && detections.descriptor) {
+          const descriptorArray = Array.from(detections.descriptor); // Convert to plain array
           setFaceEmbeddings((prevEmbeddings) => [
             ...prevEmbeddings,
-            detections.descriptor,
+            descriptorArray,
           ]);
         } else {
           alert("No face detected in the image.");
@@ -96,7 +93,7 @@ const AdminDashboard = () => {
       console.error("No image captured");
     }
   };
-
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
 

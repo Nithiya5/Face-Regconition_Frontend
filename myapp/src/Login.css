@@ -32,7 +32,7 @@
 .login-box h2 {
   font-size: 24px;
   font-weight: bold;
-  color: #facc15; /* Yellow */
+  color: #1e40af; /* Blue */
   margin-bottom: 15px;
 }
 
@@ -70,8 +70,8 @@
   width: 100%;
   padding: 10px;
   border-radius: 6px;
-  background: #facc15; /* Yellow */
-  color: #000;
+  background: #1e40af; /* Blue */
+  color: #fff; /* White text */
   font-weight: bold;
   font-size: 16px;
   cursor: pointer;
@@ -79,7 +79,7 @@
 }
 
 .login-btn:hover {
-  background: #fbbf24; /* Lighter yellow */
+  background: #3b82f6; /* Lighter blue */
 }
 
 .input-group {
@@ -99,8 +99,8 @@
 
 .input-size:focus {
   outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  border-color: #1e40af; /* Blue */
+  box-shadow: 0 0 5px rgba(30, 64, 175, 0.5); /* Blue glow */
 }
 
 /* Ensure the select element looks like the input fields */

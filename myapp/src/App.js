@@ -4,6 +4,10 @@ import aboutImage from "../src/image/About.png";
 import Login from "./Login";
 import Register from "./Register";
 import AdminDashboard from "./AdminDashboard";
+import ForgotPassword from "./ForgotPassword";
+import ResetPassword from "./ResetPassword";
+import Help from "./Help";
+import Aboutus from "./Aboutus";
 import "./App.css"; 
 
 const Header = () => {
@@ -15,7 +19,7 @@ const Header = () => {
         <Link to="/login" className="nav-link">Login</Link>
         <Link to="/register" className="nav-link">Register</Link>
         <Link to="/about" className="nav-link">About Us</Link>
-        <a href="#" className="nav-link">Help</a>
+        <Link to="/help" className="nav-link">Help</Link>
       </nav>
     </header>
   );
@@ -70,8 +74,12 @@ const App = () => {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/about" element={<About />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
+        <Route path ="/forgot"element={<ForgotPassword/>}/>;
+        <Route path = "/reset" element ={<ResetPassword/>}/>;
+        <Route path = "/help" element ={<Help/>}/>;
+        <Route path = "/about" element ={<Aboutus/>}/>;
+
       </Routes>
     </div>
   );
