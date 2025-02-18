@@ -10,7 +10,6 @@ const AdminDashboard = () => {
     designation: "",
   });
   const [employees, setEmployees] = useState([]);
-  const [employeeDetails, setEmployeeDetails] = useState(null); // State to store fetched employee details
   const [loading, setLoading] = useState(false);
 
   // Function to handle search input changes
@@ -19,25 +18,13 @@ const AdminDashboard = () => {
     setSearchQuery((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Function to handle fetching employee details by employeeId
-  const handleViewEmployeeDetails = async (employeeId) => {
-    setLoading(true);
-    try {
-      const response = await axios.get(`https://your-backend-url.com/api/admin/employee/${employeeId}`);
-      setEmployeeDetails(response.data.employee); // Assuming response contains employee details
-    } catch (error) {
-      console.error("Error fetching employee details:", error);
-    }
-    setLoading(false);
-  };
-
   // Fetch employee data based on search parameters
   const handleSearch = async () => {
     setLoading(true);
     const { employeeId, department, designation } = searchQuery;
 
     try {
-      const response = await axios.get("https://face-regconition-backend.onrender.com/api/admin//viewEmployeeDetails/:employeeId", {
+      const response = await axios.get("https://your-backend-url.com/api/admin/employees", {
         params: { employeeId, department, designation },
       });
       setEmployees(response.data); // Assuming response contains an array of employee objects
@@ -46,40 +33,6 @@ const AdminDashboard = () => {
     }
 
     setLoading(false);
-  };
-
-  // Render employee details or display employee list
-  const renderEmployeeDetails = () => {
-    if (employeeDetails) {
-      return (
-        <Card elevation={3} style={{ marginTop: "20px" }}>
-          <CardContent>
-            <Typography variant="h6">Employee Details</Typography>
-            <Grid container spacing={2} style={{ marginTop: "20px" }}>
-              <Grid item xs={12} sm={4}>
-                <Typography><strong>Employee ID:</strong> {employeeDetails.employeeId}</Typography>
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <Typography><strong>Name:</strong> {employeeDetails.name}</Typography>
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <Typography><strong>Department:</strong> {employeeDetails.department}</Typography>
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <Typography><strong>Designation:</strong> {employeeDetails.designation}</Typography>
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <Typography><strong>Email:</strong> {employeeDetails.email}</Typography>
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <Typography><strong>Phone:</strong> {employeeDetails.phone}</Typography>
-              </Grid>
-            </Grid>
-          </CardContent>
-        </Card>
-      );
-    }
-    return null;
   };
 
   // Render employee details in a table
@@ -111,10 +64,7 @@ const AdminDashboard = () => {
               <TableCell>{employee.email}</TableCell>
               <TableCell>{employee.phone}</TableCell>
               <TableCell>
-                <Button variant="outlined" color="primary" style={{ margin: "0 5px" }} onClick={() => handleViewEmployeeDetails(employee.employeeId)}>
-                  View Details
-                </Button>
-                <Button variant="outlined" color="secondary" style={{ margin: "0 5px" }}>
+                <Button variant="outlined" color="primary" style={{ margin: "0 5px" }}>
                   Edit
                 </Button>
                 <Button variant="outlined" color="secondary" style={{ margin: "0 5px" }}>
@@ -190,7 +140,7 @@ const AdminDashboard = () => {
         </CardContent>
       </Card>
 
-      {/* Render Employee Table */}
+      {/* Employee Table Section */}
       <Card elevation={3}>
         <CardContent>
           <Typography variant="h6" style={{ marginBottom: "20px" }}>
@@ -199,9 +149,6 @@ const AdminDashboard = () => {
           {renderEmployeeTable()}
         </CardContent>
       </Card>
-
-      {/* Render Employee Details */}
-      {renderEmployeeDetails()}
     </Container>
   );
 };
