@@ -14,6 +14,7 @@ const Login = () => {
     e.preventDefault();
     setError("");
 
+    // Correct the URL with template literals
     let apiUrl = `https://face-regconition-backend.onrender.com/api/${role}/login`;
 
     try {
@@ -53,7 +54,7 @@ const Login = () => {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: "#111827",
+        backgroundColor: "white", // Light gray background
         padding: 2,
       }}
     >
@@ -63,7 +64,7 @@ const Login = () => {
           borderRadius: 3,
           overflow: "hidden",
           width: "60%",
-          backgroundColor: "#1f2937",
+          backgroundColor: "#ffffff", // White background for container
           display: "flex",
         }}
       >
@@ -79,10 +80,10 @@ const Login = () => {
               alignItems: "center",
               justifyContent: "center",
               padding: 3,
-              backgroundColor: "#1f2937",
+              backgroundColor: "#ffffff", // White background for the form
             }}
           >
-            <Typography variant="h6" color="#facc15" fontWeight="bold" mb={2}>
+            <Typography variant="h6" color="#1e40af" fontWeight="bold" mb={2}>
               Login
             </Typography>
             {error && (
@@ -101,9 +102,9 @@ const Login = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 InputProps={{
-                  style: { background: "#374151", color: "#f3f4f6", borderRadius: 6 },
+                  style: { background: "#e0e7ff", color: "#1e40af", borderRadius: 6 },
                 }}
-                InputLabelProps={{ style: { color: "#9ca3af" } }}
+                InputLabelProps={{ style: { color: "#1e40af" } }}
               />
               <TextField
                 fullWidth
@@ -115,9 +116,9 @@ const Login = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 InputProps={{
-                  style: { background: "#374151", color: "#f3f4f6", borderRadius: 6 },
+                  style: { background: "#e0e7ff", color: "#1e40af", borderRadius: 6 },
                 }}
-                InputLabelProps={{ style: { color: "#9ca3af" } }}
+                InputLabelProps={{ style: { color: "#1e40af" } }}
               />
               <TextField
                 fullWidth
@@ -129,9 +130,9 @@ const Login = () => {
                 onChange={(e) => setRole(e.target.value)}
                 required
                 InputProps={{
-                  style: { background: "#374151", color: "#f3f4f6", borderRadius: 6 },
+                  style: { background: "#e0e7ff", color: "#1e40af", borderRadius: 6 },
                 }}
-                InputLabelProps={{ style: { color: "#9ca3af" } }}
+                InputLabelProps={{ style: { color: "#1e40af" } }}
               >
                 <MenuItem value="employee">Employee</MenuItem>
                 <MenuItem value="admin">Admin</MenuItem>
@@ -143,10 +144,10 @@ const Login = () => {
                 variant="contained"
                 sx={{
                   mt: 2,
-                  backgroundColor: "#facc15",
-                  color: "#000",
+                  backgroundColor: "#1e40af", // Blue
+                  color: "#fff", // White text
                   fontWeight: "bold",
-                  ":hover": { backgroundColor: "#fbbf24" },
+                  ":hover": { backgroundColor: "#3b82f6" }, // Lighter blue
                 }}
               >
                 Login
@@ -164,7 +165,7 @@ const Login = () => {
               alignItems: "center",
               justifyContent: "center",
               padding: 2,
-              backgroundColor: "#111827",
+              backgroundColor: "#ffffff", // White background for the image section
             }}
           >
             <Box
