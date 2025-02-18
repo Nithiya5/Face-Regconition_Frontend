@@ -4,7 +4,8 @@ import aboutImage from "../src/image/About.png";
 import Login from "./Login";
 import Register from "./Register";
 import AdminDashboard from "./AdminDashboard";
-import "./App.css"; 
+import RegisterEmployee from "./RegisterEmployee";
+import "./App.css";
 
 const Header = () => {
   return (
@@ -72,9 +73,11 @@ const App = () => {
         <Route path="/register" element={<Register />} />
         <Route path="/about" element={<About />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
+        <Route path="/register-employee" element={<RegisterEmployee />} />
       </Routes>
     </div>
   );
 };
 
 export default App;
+

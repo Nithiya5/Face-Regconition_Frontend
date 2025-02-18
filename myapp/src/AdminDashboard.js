@@ -1,139 +1,209 @@
-
-        // await faceapi.nets.ssdMobilenetv1.loadFromUri("http://localhost:3000/models/ssd_mobilenetv1_model-weights_manifest.json");
-        import React, { useState, useEffect, useRef } from "react";
-import { TextField, Button, Container, Typography, Grid, FormControlLabel, Checkbox, Card, CardContent, Box } from "@mui/material";
-import Webcam from "react-webcam";
+import React, { useState, useEffect } from "react";
+import { Container, Typography, Grid, TextField, Button, Card, CardContent, Box, Table, TableHead, TableBody, TableRow, TableCell } from "@mui/material";
 import axios from "axios";
-import * as faceapi from "face-api.js";
+import { Link } from "react-router-dom"; // Import Link from react-router-dom for navigation
 
 const AdminDashboard = () => {
-  const [employeeData, setEmployeeData] = useState({
+  const [searchQuery, setSearchQuery] = useState({
     employeeId: "",
-    name: "",
     department: "",
     designation: "",
-    email: "",
-    phone: "",
-    password: "",
-    canAddVisitor: false,
   });
+  const [employees, setEmployees] = useState([]);
+  const [employeeDetails, setEmployeeDetails] = useState(null); // State to store fetched employee details
+  const [loading, setLoading] = useState(false);
 
-  const [capturedImages, setCapturedImages] = useState([]);
-  const [profileImage, setProfileImage] = useState(null);
-  const [faceEmbeddings, setFaceEmbeddings] = useState([]);
-  const [isModelLoaded, setIsModelLoaded] = useState(false);
-  const webcamRef = useRef(null);
-
-  useEffect(() => {
-    const loadModels = async () => {
-      try {
-        await faceapi.nets.ssdMobilenetv1.loadFromUri("http://localhost:3000/models/ssd_mobilenetv1_model-weights_manifest.json");
-        await faceapi.nets.faceLandmark68Net.loadFromUri("http://localhost:3000/models/ssd_mobilenetv1_model-weights_manifest.json");
-        await faceapi.nets.faceRecognitionNet.loadFromUri("http://localhost:3000/models/ssd_mobilenetv1_model-weights_manifest.json");
-        setIsModelLoaded(true);
-      } catch (error) {
-        console.error("Error loading models:", error);
-      }
-    };
-    loadModels();
-  }, []);
-
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setEmployeeData({ ...employeeData, [name]: type === "checkbox" ? checked : value });
+  // Function to handle search input changes
+  const handleSearchChange = (e) => {
+    const { name, value } = e.target;
+    setSearchQuery((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleProfileImageChange = (e) => {
-    const file = e.target.files[0];
-    if (!file || file.size > 5 * 1024 * 1024 || !["image/jpeg", "image/png"].includes(file.type)) {
-      alert("Invalid file. Ensure it is JPEG/PNG and under 5MB.");
-      return;
-    }
-    setProfileImage(file);
-  };
-
-  const captureImage = async () => {
-    if (!isModelLoaded || capturedImages.length >= 5) return;
-    const imageSrc = webcamRef.current.getScreenshot();
-    setCapturedImages([...capturedImages, imageSrc]);
+  // Function to handle fetching employee details by employeeId
+  const handleViewEmployeeDetails = async (employeeId) => {
+    setLoading(true);
     try {
-      const img = await faceapi.bufferToImage(await fetch(imageSrc).then((res) => res.blob()));
-      const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
-      if (detections) setFaceEmbeddings([...faceEmbeddings, Array.from(detections.descriptor)]);
+      const response = await axios.get(`https://your-backend-url.com/api/admin/employee/${employeeId}`);
+      setEmployeeDetails(response.data.employee); // Assuming response contains employee details
     } catch (error) {
-      console.error("Face detection error:", error);
+      console.error("Error fetching employee details:", error);
     }
+    setLoading(false);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const formData = new FormData();
-    Object.entries(employeeData).forEach(([key, value]) => formData.append(key, value));
-    if (faceEmbeddings.length) formData.append("faceEmbeddings", JSON.stringify(faceEmbeddings));
-    if (profileImage) formData.append("image", profileImage);
+  // Fetch employee data based on search parameters
+  const handleSearch = async () => {
+    setLoading(true);
+    const { employeeId, department, designation } = searchQuery;
 
     try {
-      const authToken = localStorage.getItem("authToken");
-      const response = await axios.post("https://face-regconition-backend.onrender.com/api/admin/registerEmployee", formData, {
-        headers: { "Content-Type": "multipart/form-data", Authorization: `Bearer ${authToken}` },
+      const response = await axios.get("https://face-regconition-backend.onrender.com/api/admin//viewEmployeeDetails/:employeeId", {
+        params: { employeeId, department, designation },
       });
-      alert("Employee registered successfully!");
+      setEmployees(response.data); // Assuming response contains an array of employee objects
     } catch (error) {
-      console.error("Error:", error);
-      alert("Registration failed.");
+      console.error("Error fetching employee data:", error);
     }
+
+    setLoading(false);
+  };
+
+  // Render employee details or display employee list
+  const renderEmployeeDetails = () => {
+    if (employeeDetails) {
+      return (
+        <Card elevation={3} style={{ marginTop: "20px" }}>
+          <CardContent>
+            <Typography variant="h6">Employee Details</Typography>
+            <Grid container spacing={2} style={{ marginTop: "20px" }}>
+              <Grid item xs={12} sm={4}>
+                <Typography><strong>Employee ID:</strong> {employeeDetails.employeeId}</Typography>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <Typography><strong>Name:</strong> {employeeDetails.name}</Typography>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <Typography><strong>Department:</strong> {employeeDetails.department}</Typography>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <Typography><strong>Designation:</strong> {employeeDetails.designation}</Typography>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <Typography><strong>Email:</strong> {employeeDetails.email}</Typography>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <Typography><strong>Phone:</strong> {employeeDetails.phone}</Typography>
+              </Grid>
+            </Grid>
+          </CardContent>
+        </Card>
+      );
+    }
+    return null;
+  };
+
+  // Render employee details in a table
+  const renderEmployeeTable = () => {
+    if (employees.length === 0) {
+      return <Typography>No employee data found</Typography>;
+    }
+
+    return (
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell>Employee ID</TableCell>
+            <TableCell>Name</TableCell>
+            <TableCell>Department</TableCell>
+            <TableCell>Designation</TableCell>
+            <TableCell>Email</TableCell>
+            <TableCell>Phone</TableCell>
+            <TableCell>Actions</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {employees.map((employee) => (
+            <TableRow key={employee.employeeId}>
+              <TableCell>{employee.employeeId}</TableCell>
+              <TableCell>{employee.name}</TableCell>
+              <TableCell>{employee.department}</TableCell>
+              <TableCell>{employee.designation}</TableCell>
+              <TableCell>{employee.email}</TableCell>
+              <TableCell>{employee.phone}</TableCell>
+              <TableCell>
+                <Button variant="outlined" color="primary" style={{ margin: "0 5px" }} onClick={() => handleViewEmployeeDetails(employee.employeeId)}>
+                  View Details
+                </Button>
+                <Button variant="outlined" color="secondary" style={{ margin: "0 5px" }}>
+                  Edit
+                </Button>
+                <Button variant="outlined" color="secondary" style={{ margin: "0 5px" }}>
+                  Delete
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    );
   };
 
   return (
-    <Container maxWidth="md">
+    <Container maxWidth="lg" style={{ marginTop: "20px" }}>
       <Typography variant="h4" align="center" gutterBottom>
-        Admin Dashboard - Add Employee
+        Admin Dashboard
       </Typography>
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
-          <Card elevation={3}>
-            <CardContent>
-              <Typography variant="h6">Employee Details</Typography>
-              {Object.keys(employeeData).map((key) =>
-                key !== "canAddVisitor" ? (
-                  <TextField key={key} fullWidth label={key} name={key} value={employeeData[key]} onChange={handleChange} margin="normal" />
-                ) : (
-                  <FormControlLabel key={key} control={<Checkbox checked={employeeData.canAddVisitor} onChange={handleChange} name={key} />} label="Can Add Visitor" />
-                )
-              )}
-              <Typography variant="h6">Upload Profile Image</Typography>
-              <input type="file" accept="image/jpeg, image/png" onChange={handleProfileImageChange} />
-            </CardContent>
-          </Card>
-        </Grid>
 
-        <Grid item xs={12} md={6}>
-          <Card elevation={3}>
-            <CardContent style={{ textAlign: "center" }}>
-              <Typography variant="h6">Capture Employee Image</Typography>
-              <Webcam ref={webcamRef} screenshotFormat="image/jpeg" style={{ width: "100%", borderRadius: 10 }} />
-              <Button variant="contained" color="primary" onClick={captureImage} style={{ marginTop: "20px" }}>Capture Image</Button>
-              <Box mt={2}>
-                {capturedImages.length > 0 && <Typography variant="body1">Captured Images:</Typography>}
-                <Grid container spacing={2}>
-                  {capturedImages.map((image, index) => (
-                    <Grid item xs={4} key={index}>
-                      <img src={image} alt={`captured-${index}`} style={{ width: "100%", borderRadius: 10 }} />
-                    </Grid>
-                  ))}
-                </Grid>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
+      {/* Add Employee Button */}
+      <Box mb={2} display="flex" justifyContent="flex-end">
+        <Link to="/register-employee">
+          <Button variant="contained" color="primary">
+            Add Employee
+          </Button>
+        </Link>
+      </Box>
 
-        <Grid item xs={12}>
-          <Button variant="contained" color="primary" onClick={handleSubmit} style={{ width: "100%", marginTop: "20px" }}>Submit</Button>
-        </Grid>
-      </Grid>
+      {/* Search Section */}
+      <Card elevation={3} style={{ marginBottom: "20px" }}>
+        <CardContent>
+          <Typography variant="h6">Search Employees</Typography>
+          <Grid container spacing={3} style={{ marginTop: "20px" }}>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                label="Employee ID"
+                variant="outlined"
+                name="employeeId"
+                value={searchQuery.employeeId}
+                onChange={handleSearchChange}
+                color="primary"
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                label="Department"
+                variant="outlined"
+                name="department"
+                value={searchQuery.department}
+                onChange={handleSearchChange}
+                color="primary"
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                label="Designation"
+                variant="outlined"
+                name="designation"
+                value={searchQuery.designation}
+                onChange={handleSearchChange}
+                color="primary"
+              />
+            </Grid>
+          </Grid>
+          <Box mt={2} display="flex" justifyContent="flex-end">
+            <Button variant="contained" color="primary" onClick={handleSearch} disabled={loading}>
+              {loading ? "Searching..." : "Search"}
+            </Button>
+          </Box>
+        </CardContent>
+      </Card>
+
+      {/* Render Employee Table */}
+      <Card elevation={3}>
+        <CardContent>
+          <Typography variant="h6" style={{ marginBottom: "20px" }}>
+            Employee List
+          </Typography>
+          {renderEmployeeTable()}
+        </CardContent>
+      </Card>
+
+      {/* Render Employee Details */}
+      {renderEmployeeDetails()}
     </Container>
   );
 };
 
 export default AdminDashboard;
-
