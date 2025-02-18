@@ -1,8 +1,8 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { TextField, Button, Container, Typography, Grid, FormControlLabel, Checkbox, Card, CardContent, Box } from "@mui/material";
 import Webcam from "react-webcam";
 import axios from "axios";
-import * as faceapi from "face-api.js"; // Import face-api.js
+import * as faceapi from "face-api.js";
 
 const AdminDashboard = () => {
   const [employeeData, setEmployeeData] = useState({
@@ -17,35 +17,34 @@ const AdminDashboard = () => {
   });
 
   const [capturedImages, setCapturedImages] = useState([]); // Array for multiple images
-  const [faceEmbeddings, setFaceEmbeddings] = useState([]); // Store face embeddings
-  const [isModelLoaded, setIsModelLoaded] = useState(false); // Track if the model is loaded
+  const [profileImage, setProfileImage] = useState(null); // Profile image file
+  const [faceEmbeddings, setFaceEmbeddings] = useState([]); // Store face embeddings for recognition
+  const [isModelLoaded, setIsModelLoaded] = useState(false); // Track model loading state
   const webcamRef = useRef(null);
 
+  // Load face-api.js models
   useEffect(() => {
-    // Load the face-api.js models when the component mounts
     const loadModels = async () => {
       try {
-        // Load the SSD MobileNetV1 model for face detection
-        await faceapi.nets.ssdMobilenetv1.loadFromUri("/models"); // Assuming the model files are at '/models'
+        await faceapi.nets.ssdMobilenetv1.loadFromUri("http://localhost:3000/models/ssd_mobilenetv1_model-weights_manifest.json");
         console.log("SSD MobileNetV1 model loaded");
 
-        // Load the Face Landmark 68 model for facial landmarks and embeddings
-        await faceapi.nets.faceLandmark68Net.loadFromUri("/models");
+        await faceapi.nets.faceLandmark68Net.loadFromUri("http://localhost:3000//models/face_recognition_model-weights_manifest.json");
         console.log("Face Landmark 68 model loaded");
 
-        // Load the Face Recognition model for embeddings
-        await faceapi.nets.faceRecognitionNet.loadFromUri("/models");
-        console.log("Face Recognition Net model loaded");
+        await faceapi.nets.faceRecognitionNet.loadFromUri("http://localhost:3000/models/face_landmark_68_model-weights_manifest.json");
+        console.log("Face Recognition model loaded");
 
-        setIsModelLoaded(true); // Set the flag to true once all models are loaded
+        setIsModelLoaded(true);
       } catch (error) {
         console.error("Error loading models:", error);
       }
     };
-    
+
     loadModels();
   }, []);
 
+  // Handle form field changes
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setEmployeeData({
@@ -54,6 +53,7 @@ const AdminDashboard = () => {
     });
   };
 
+  // Capture image from webcam and detect faces
   const captureImage = async () => {
     if (capturedImages.length >= 5) {
       alert("You can only capture up to 5 images.");
@@ -61,42 +61,34 @@ const AdminDashboard = () => {
     }
 
     const imageSrc = webcamRef.current.getScreenshot();
-    if (imageSrc) {
-      setCapturedImages((prevImages) => [...prevImages, imageSrc]);
+    setCapturedImages((prevImages) => [...prevImages, imageSrc]);
 
-      try {
-        // Wait until models are loaded before performing face detection
-        if (!isModelLoaded) {
-          alert("Please wait for the models to load before capturing images.");
-          return;
-        }
+    if (!isModelLoaded) {
+      alert("Please wait for the models to load before capturing images.");
+      return;
+    }
 
-        // Convert the base64 image to a Blob using fetch
-        const blob = await (await fetch(imageSrc)).blob();
+    try {
+      const img = await faceapi.bufferToImage(await fetch(imageSrc).then((res) => res.blob()));
 
-        // Convert the Blob to an image using face-api.js
-        const img = await faceapi.bufferToImage(blob);
+      // Detect face and landmarks
+      const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
 
-        // Detect the face and get landmarks and embeddings
-        const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
-        
-        if (detections) {
-          setFaceEmbeddings((prevEmbeddings) => [
-            ...prevEmbeddings,
-            detections.descriptor,
-          ]);
-        } else {
-          alert("No face detected in the image.");
-        }
-      } catch (error) {
-        console.error("Error processing the image:", error);
-        alert("There was an error processing the image.");
+      if (detections) {
+        const descriptorArray = Array.from(detections.descriptor); // Convert descriptor to plain array
+
+        // Store face embeddings
+        setFaceEmbeddings((prevEmbeddings) => [...prevEmbeddings, descriptorArray]);
+      } else {
+        alert("No face detected.");
       }
-    } else {
-      console.error("No image captured");
+    } catch (error) {
+      console.error("Error processing image:", error);
+      alert("Error processing image.");
     }
   };
 
+  // Handle form submission with image and data
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -105,9 +97,30 @@ const AdminDashboard = () => {
       return;
     }
 
-    if (faceEmbeddings.length === 0) {
-      alert("Please capture face embeddings.");
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Authentication token missing. Please log in.");
       return;
+    }
+
+    let profileImageUrl = "";
+    if (profileImage) {
+      const profileFormData = new FormData();
+      profileFormData.append("file", profileImage);
+      profileFormData.append("upload_preset", "hjgdsfiu"); // Use your correct upload preset here
+
+      try {
+        const uploadRes = await axios.post("https://api.cloudinary.com/v1_1/djxbzcayc/image/upload", profileFormData, {
+          headers: {
+            "Content-Type": "multipart/form-data", // Ensure content type is set correctly
+          },
+        });
+        profileImageUrl = uploadRes.data.secure_url;
+      } catch (error) {
+        console.error("Cloudinary upload error:", error);
+        alert("Error uploading profile image");
+        return;
+      }
     }
 
     const formData = new FormData();
@@ -119,40 +132,35 @@ const AdminDashboard = () => {
     formData.append("phone", employeeData.phone);
     formData.append("password", employeeData.password);
     formData.append("canAddVisitor", employeeData.canAddVisitor);
+    formData.append("profileImage", profileImageUrl);
 
-    const token = localStorage.getItem("token");
-    if (!token) {
-      alert("Authentication token missing. Please log in.");
-      return;
+    // Append captured images as blobs
+    for (let i = 0; i < capturedImages.length; i++) {
+      const response = await fetch(capturedImages[i]);
+      const blob = await response.blob();
+      formData.append("faceImages", blob, `image${i + 1}.jpg`);
     }
 
+    // Add the face embeddings as JSON
+    formData.append("faceEmbeddings", JSON.stringify(faceEmbeddings));
+
     try {
-      // Convert images into Blob format before appending
-      for (let i = 0; i < capturedImages.length; i++) {
-        const response = await fetch(capturedImages[i]);
-        const blob = await response.blob();
-        formData.append("images", blob, `image${i + 1}.jpg`);
-      }
-
-      // Add face embeddings as JSON string
-      formData.append("faceEmbeddings", JSON.stringify(faceEmbeddings));
-
       await axios.post(
         "https://face-regconition-backend.onrender.com/api/admin/registerEmployee",
         formData,
         {
           headers: {
-            "Content-Type": "multipart/form-data",
             Authorization: `Bearer ${token}`,
           },
         }
       );
 
       alert("Employee registered successfully!");
-      setCapturedImages([]);
-      setFaceEmbeddings([]);
+      setCapturedImages([]); // Clear images after successful submission
+      setProfileImage(null); // Reset profile image
+      setFaceEmbeddings([]); // Clear embeddings after submission
     } catch (error) {
-      console.error("Upload error:", error);
+      console.error("Upload error:", error.response?.data || error);
       alert(error.response?.data?.error || "Error uploading images");
     }
   };
@@ -164,6 +172,7 @@ const AdminDashboard = () => {
       </Typography>
 
       <Grid container spacing={3}>
+        {/* Employee Form */}
         <Grid item xs={12} md={6}>
           <Card elevation={3}>
             <CardContent>
@@ -176,10 +185,15 @@ const AdminDashboard = () => {
               <TextField fullWidth label="Phone" name="phone" value={employeeData.phone} onChange={handleChange} margin="normal" />
               <TextField fullWidth label="Password" type="password" name="password" value={employeeData.password} onChange={handleChange} margin="normal" />
               <FormControlLabel control={<Checkbox checked={employeeData.canAddVisitor} onChange={handleChange} name="canAddVisitor" />} label="Can Add Visitor" />
+              
+              {/* Profile Image Upload */}
+              <Typography variant="h6" gutterBottom>Upload Profile Image</Typography>
+              <input type="file" accept="image/jpeg, image/png" onChange={(e) => setProfileImage(e.target.files[0])} />
             </CardContent>
           </Card>
         </Grid>
 
+        {/* Webcam & Captured Images */}
         <Grid item xs={12} md={6}>
           <Card elevation={3}>
             <CardContent style={{ textAlign: "center" }}>
@@ -206,11 +220,9 @@ const AdminDashboard = () => {
         </Grid>
       </Grid>
 
-      <Box display="flex" justifyContent="center" mt={3}>
-        <Button variant="contained" color="secondary" onClick={handleSubmit} style={{ padding: "10px 0", fontSize: "16px" }}>
-          Register Employee
-        </Button>
-      </Box>
+      <Button variant="contained" color="secondary" fullWidth onClick={handleSubmit} style={{ marginTop: 20, padding: "10px 0", fontSize: "16px" }}>
+        Register Employee
+      </Button>
     </Container>
   );
 };
