@@ -1,86 +1,53 @@
-import React, { useState, useRef, useEffect } from "react";
-import { TextField, Button, Container, Typography, Grid, FormControlLabel, Checkbox, Card, CardContent, Box } from "@mui/material";
-import Webcam from "react-webcam";
+import React, { useState, useEffect } from "react";
+import { Container, Typography, Grid, TextField, Button, Card, CardContent, Box, Table, TableHead, TableBody, TableRow, TableCell } from "@mui/material";
 import axios from "axios";
-import * as faceapi from "face-api.js"; // Import face-api.js
+import { Link } from "react-router-dom"; // Import Link from react-router-dom for navigation
 
 const AdminDashboard = () => {
-  const [employeeData, setEmployeeData] = useState({
+  const [searchQuery, setSearchQuery] = useState({
     employeeId: "",
-    name: "",
     department: "",
     designation: "",
-    email: "",
-    phone: "",
-    password: "",
-    canAddVisitor: false,
   });
+  const [employees, setEmployees] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const [capturedImages, setCapturedImages] = useState([]); // Array for multiple images
-  const [faceEmbeddings, setFaceEmbeddings] = useState([]); // Store face embeddings
-  const [isModelLoaded, setIsModelLoaded] = useState(false); // Track if the model is loaded
-  const webcamRef = useRef(null);
-
-  useEffect(() => {
-    // Load the face-api.js models when the component mounts
-    const loadModels = async () => {
-      try {
-        // Load the SSD MobileNetV1 model for face detection
-        await faceapi.nets.ssdMobilenetv1.loadFromUri("/models"); // Assuming the model files are at '/models'
-        console.log("SSD MobileNetV1 model loaded");
-
-        // Load the Face Landmark 68 model for facial landmarks and embeddings
-        await faceapi.nets.faceLandmark68Net.loadFromUri("/models");
-        console.log("Face Landmark 68 model loaded");
-
-        // Load the Face Recognition model for embeddings
-        await faceapi.nets.faceRecognitionNet.loadFromUri("/models");
-        console.log("Face Recognition Net model loaded");
-
-        setIsModelLoaded(true); // Set the flag to true once all models are loaded
-      } catch (error) {
-        console.error("Error loading models:", error);
-      }
-    };
-    
-    loadModels();
-  }, []);
-
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setEmployeeData({
-      ...employeeData,
-      [name]: type === "checkbox" ? checked : value,
-    });
+  // Function to handle search input changes
+  const handleSearchChange = (e) => {
+    const { name, value } = e.target;
+    setSearchQuery((prev) => ({ ...prev, [name]: value }));
   };
 
   const captureImage = async () => {
-    if (faceEmbeddings.length >= 10) {
-      alert("You can only capture up to 10 face embeddings.");
+    if (capturedImages.length >= 5) {
+      alert("You can only capture up to 5 images.");
       return;
     }
-  
+
     const imageSrc = webcamRef.current.getScreenshot();
     if (imageSrc) {
       setCapturedImages((prevImages) => [...prevImages, imageSrc]);
-  
+
       try {
+        // Wait until models are loaded before performing face detection
         if (!isModelLoaded) {
           alert("Please wait for the models to load before capturing images.");
           return;
         }
-  
+
+        // Convert the base64 image to a Blob using fetch
         const blob = await (await fetch(imageSrc)).blob();
+
+        // Convert the Blob to an image using face-api.js
         const img = await faceapi.bufferToImage(blob);
-        const detections = await faceapi.detectSingleFace(img)
-          .withFaceLandmarks()
-          .withFaceDescriptor();
-  
-        if (detections && detections.descriptor) {
-          const descriptorArray = Array.from(detections.descriptor); // Convert to plain array
+
+        // Detect the face and get landmarks and embeddings
+        const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
+        
+        if (detections) {
           setFaceEmbeddings((prevEmbeddings) => [
             ...prevEmbeddings,
-            descriptorArray,
+            detections.descriptor,
           ]);
         } else {
           alert("No face detected in the image.");
@@ -93,7 +60,7 @@ const AdminDashboard = () => {
       console.error("No image captured");
     }
   };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -155,59 +122,76 @@ const AdminDashboard = () => {
   };
 
   return (
-    <Container maxWidth="md">
+    <Container maxWidth="lg" style={{ marginTop: "20px" }}>
       <Typography variant="h4" align="center" gutterBottom>
-        Admin Dashboard - Add Employee
+        Admin Dashboard
       </Typography>
 
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
-          <Card elevation={3}>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>Employee Details</Typography>
-              <TextField fullWidth label="Employee ID" name="employeeId" value={employeeData.employeeId} onChange={handleChange} margin="normal" />
-              <TextField fullWidth label="Name" name="name" value={employeeData.name} onChange={handleChange} margin="normal" />
-              <TextField fullWidth label="Department" name="department" value={employeeData.department} onChange={handleChange} margin="normal" />
-              <TextField fullWidth label="Designation" name="designation" value={employeeData.designation} onChange={handleChange} margin="normal" />
-              <TextField fullWidth label="Email" type="email" name="email" value={employeeData.email} onChange={handleChange} margin="normal" />
-              <TextField fullWidth label="Phone" name="phone" value={employeeData.phone} onChange={handleChange} margin="normal" />
-              <TextField fullWidth label="Password" type="password" name="password" value={employeeData.password} onChange={handleChange} margin="normal" />
-              <FormControlLabel control={<Checkbox checked={employeeData.canAddVisitor} onChange={handleChange} name="canAddVisitor" />} label="Can Add Visitor" />
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <Card elevation={3}>
-            <CardContent style={{ textAlign: "center" }}>
-              <Typography variant="h6">Capture Employee Image</Typography>
-              <Webcam ref={webcamRef} screenshotFormat="image/jpeg" style={{ width: "100%", borderRadius: 10 }} />
-              <Button variant="contained" color="primary" onClick={captureImage} style={{ marginTop: 10 }}>
-                Capture Image
-              </Button>
-
-              {capturedImages.length > 0 && (
-                <Box mt={2}>
-                  <Typography variant="h6">Captured Images</Typography>
-                  <Grid container spacing={2}>
-                    {capturedImages.map((img, index) => (
-                      <Grid item xs={4} key={index}>
-                        <img src={img} alt={`Captured ${index + 1}`} style={{ width: "100%", borderRadius: 10, boxShadow: "0px 4px 10px rgba(0,0,0,0.2)" }} />
-                      </Grid>
-                    ))}
-                  </Grid>
-                </Box>
-              )}
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-
-      <Box display="flex" justifyContent="center" mt={3}>
-        <Button variant="contained" color="secondary" onClick={handleSubmit} style={{ padding: "10px 0", fontSize: "16px" }}>
-          Register Employee
-        </Button>
+      {/* Add Employee Button */}
+      <Box mb={2} display="flex" justifyContent="flex-end">
+        <Link to="/register-employee">
+          <Button variant="contained" color="primary">
+            Add Employee
+          </Button>
+        </Link>
       </Box>
+
+      {/* Search Section */}
+      <Card elevation={3} style={{ marginBottom: "20px" }}>
+        <CardContent>
+          <Typography variant="h6">Search Employees</Typography>
+          <Grid container spacing={3} style={{ marginTop: "20px" }}>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                label="Employee ID"
+                variant="outlined"
+                name="employeeId"
+                value={searchQuery.employeeId}
+                onChange={handleSearchChange}
+                color="primary"
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                label="Department"
+                variant="outlined"
+                name="department"
+                value={searchQuery.department}
+                onChange={handleSearchChange}
+                color="primary"
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                label="Designation"
+                variant="outlined"
+                name="designation"
+                value={searchQuery.designation}
+                onChange={handleSearchChange}
+                color="primary"
+              />
+            </Grid>
+          </Grid>
+          <Box mt={2} display="flex" justifyContent="flex-end">
+            <Button variant="contained" color="primary" onClick={handleSearch} disabled={loading}>
+              {loading ? "Searching..." : "Search"}
+            </Button>
+          </Box>
+        </CardContent>
+      </Card>
+
+      {/* Employee Table Section */}
+      <Card elevation={3}>
+        <CardContent>
+          <Typography variant="h6" style={{ marginBottom: "20px" }}>
+            Employee List
+          </Typography>
+          {renderEmployeeTable()}
+        </CardContent>
+      </Card>
     </Container>
   );
 };
