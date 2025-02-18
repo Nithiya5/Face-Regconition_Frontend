@@ -1,10 +1,6 @@
-
-        // await faceapi.nets.ssdMobilenetv1.loadFromUri("http://localhost:3000/models/ssd_mobilenetv1_model-weights_manifest.json");
-        import React, { useState, useEffect, useRef } from "react";
-import { TextField, Button, Container, Typography, Grid, FormControlLabel, Checkbox, Card, CardContent, Box } from "@mui/material";
-import Webcam from "react-webcam";
+import React, { useState, useEffect } from "react";
+import { TextField, Button, Container, Typography, Grid, FormControlLabel, Checkbox, Card, CardContent } from "@mui/material";
 import axios from "axios";
-import * as faceapi from "face-api.js";
 
 const AdminDashboard = () => {
   const [employeeData, setEmployeeData] = useState({
@@ -18,31 +14,42 @@ const AdminDashboard = () => {
     canAddVisitor: false,
   });
 
-  const [capturedImages, setCapturedImages] = useState([]);
   const [profileImage, setProfileImage] = useState(null);
-  const [faceEmbeddings, setFaceEmbeddings] = useState([]);
-  const [isModelLoaded, setIsModelLoaded] = useState(false);
-  const webcamRef = useRef(null);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true); // Loading state to handle async token fetch
 
-  useEffect(() => {
-    const loadModels = async () => {
-      try {
-        await faceapi.nets.ssdMobilenetv1.loadFromUri("http://localhost:3000/models/ssd_mobilenetv1_model-weights_manifest.json");
-        await faceapi.nets.faceLandmark68Net.loadFromUri("http://localhost:3000/models/ssd_mobilenetv1_model-weights_manifest.json");
-        await faceapi.nets.faceRecognitionNet.loadFromUri("http://localhost:3000/models/ssd_mobilenetv1_model-weights_manifest.json");
-        setIsModelLoaded(true);
-      } catch (error) {
-        console.error("Error loading models:", error);
+  // Fetch logged-in user details and set the user state
+  const fetchUserDetails = async () => {
+    try {
+      const authToken = localStorage.getItem("token"); // Get token from localStorage
+      if (!authToken) {
+        // Handle the case where token is not available
+        alert("Token not found. Please log in again.");
+        return;
       }
-    };
-    loadModels();
+      const response = await axios.get("http://localhost:8000/api/auth/user", {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+      setUser(response.data); // Set user details after successful fetch
+      setLoading(false); // Set loading to false after the data is fetched
+    } catch (error) {
+      console.error("Error fetching user details:", error);
+      setLoading(false); // Stop loading in case of error
+    }
+  };
+
+  // Load user details on component mount
+  useEffect(() => {
+    fetchUserDetails();
   }, []);
 
+  // Handle input changes for employee data
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setEmployeeData({ ...employeeData, [name]: type === "checkbox" ? checked : value });
   };
 
+  // Handle profile image change
   const handleProfileImageChange = (e) => {
     const file = e.target.files[0];
     if (!file || file.size > 5 * 1024 * 1024 || !["image/jpeg", "image/png"].includes(file.type)) {
@@ -52,29 +59,23 @@ const AdminDashboard = () => {
     setProfileImage(file);
   };
 
-  const captureImage = async () => {
-    if (!isModelLoaded || capturedImages.length >= 5) return;
-    const imageSrc = webcamRef.current.getScreenshot();
-    setCapturedImages([...capturedImages, imageSrc]);
-    try {
-      const img = await faceapi.bufferToImage(await fetch(imageSrc).then((res) => res.blob()));
-      const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
-      if (detections) setFaceEmbeddings([...faceEmbeddings, Array.from(detections.descriptor)]);
-    } catch (error) {
-      console.error("Face detection error:", error);
-    }
-  };
-
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading) return; // Prevent form submission if the token is still being fetched
+
     const formData = new FormData();
     Object.entries(employeeData).forEach(([key, value]) => formData.append(key, value));
-    if (faceEmbeddings.length) formData.append("faceEmbeddings", JSON.stringify(faceEmbeddings));
     if (profileImage) formData.append("image", profileImage);
 
     try {
-      const authToken = localStorage.getItem("authToken");
-      const response = await axios.post("https://face-regconition-backend.onrender.com/api/admin/registerEmployee", formData, {
+      const authToken = localStorage.getItem("token"); // Ensure you're getting the correct token
+      if (!authToken) {
+        alert("Token not found. Please log in again.");
+        return;
+      }
+
+      await axios.post("http://localhost:8000/api/admin/registerEmployee", formData, {
         headers: { "Content-Type": "multipart/form-data", Authorization: `Bearer ${authToken}` },
       });
       alert("Employee registered successfully!");
@@ -84,11 +85,17 @@ const AdminDashboard = () => {
     }
   };
 
+  // Wait for user details to load, then render the UI
+  if (loading) {
+    return <Typography variant="h6" align="center">Loading user details...</Typography>;
+  }
+
   return (
     <Container maxWidth="md">
       <Typography variant="h4" align="center" gutterBottom>
         Admin Dashboard - Add Employee
       </Typography>
+      {user && <Typography variant="h6" align="center">Logged in as: {user.name} ({user.role})</Typography>}
       <Grid container spacing={3}>
         <Grid item xs={12} md={6}>
           <Card elevation={3}>
@@ -96,9 +103,21 @@ const AdminDashboard = () => {
               <Typography variant="h6">Employee Details</Typography>
               {Object.keys(employeeData).map((key) =>
                 key !== "canAddVisitor" ? (
-                  <TextField key={key} fullWidth label={key} name={key} value={employeeData[key]} onChange={handleChange} margin="normal" />
+                  <TextField
+                    key={key}
+                    fullWidth
+                    label={key}
+                    name={key}
+                    value={employeeData[key]}
+                    onChange={handleChange}
+                    margin="normal"
+                  />
                 ) : (
-                  <FormControlLabel key={key} control={<Checkbox checked={employeeData.canAddVisitor} onChange={handleChange} name={key} />} label="Can Add Visitor" />
+                  <FormControlLabel
+                    key={key}
+                    control={<Checkbox checked={employeeData.canAddVisitor} onChange={handleChange} name={key} />}
+                    label="Can Add Visitor"
+                  />
                 )
               )}
               <Typography variant="h6">Upload Profile Image</Typography>
@@ -107,28 +126,16 @@ const AdminDashboard = () => {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={6}>
-          <Card elevation={3}>
-            <CardContent style={{ textAlign: "center" }}>
-              <Typography variant="h6">Capture Employee Image</Typography>
-              <Webcam ref={webcamRef} screenshotFormat="image/jpeg" style={{ width: "100%", borderRadius: 10 }} />
-              <Button variant="contained" color="primary" onClick={captureImage} style={{ marginTop: "20px" }}>Capture Image</Button>
-              <Box mt={2}>
-                {capturedImages.length > 0 && <Typography variant="body1">Captured Images:</Typography>}
-                <Grid container spacing={2}>
-                  {capturedImages.map((image, index) => (
-                    <Grid item xs={4} key={index}>
-                      <img src={image} alt={`captured-${index}`} style={{ width: "100%", borderRadius: 10 }} />
-                    </Grid>
-                  ))}
-                </Grid>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-
         <Grid item xs={12}>
-          <Button variant="contained" color="primary" onClick={handleSubmit} style={{ width: "100%", marginTop: "20px" }}>Submit</Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleSubmit}
+            style={{ width: "100%", marginTop: "20px" }}
+            disabled={loading} // Disable button while loading
+          >
+            Submit
+          </Button>
         </Grid>
       </Grid>
     </Container>
@@ -136,4 +143,3 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
-

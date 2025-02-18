@@ -15,7 +15,7 @@ const Login = () => {
     setError("");
 
     // Correct the URL with template literals
-    let apiUrl = `https://face-regconition-backend.onrender.com/api/${role}/login`;
+    let apiUrl = `http://localhost:8000/api/${role}/login`;
 
     try {
       const response = await fetch(apiUrl, {
