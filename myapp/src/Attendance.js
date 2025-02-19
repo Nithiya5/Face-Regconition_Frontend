@@ -37,7 +37,7 @@ const Attendance = () => {
           return;
         }
 
-        const response = await axios.get("https://face-regconition-backend.onrender.com/api/auth/user", {
+        const response = await axios.get("http://localhost:8000/api/auth/user", {
           headers: { Authorization: `Bearer ${authToken}` },
         });
 
@@ -55,20 +55,19 @@ const Attendance = () => {
   
   
 
-  // ✅ Capture Face Embedding
   const captureFace = async () => {
     if (!isModelLoaded) {
       alert("Face detection models are not loaded yet.");
       return;
     }
-
+  
     const imageSrc = webcamRef.current.getScreenshot();
     try {
       const img = await faceapi.bufferToImage(await fetch(imageSrc).then((res) => res.blob()));
       const detection = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
-
+  
       if (detection) {
-        setFaceEmbedding(Array.from(detection.descriptor));
+        setFaceEmbedding([Array.from(detection.descriptor)]); // Wrap the descriptor in an array
         alert("Face detected! Ready to mark attendance.");
       } else {
         alert("No face detected. Try again.");
@@ -78,12 +77,13 @@ const Attendance = () => {
       alert("Failed to detect face.");
     }
   };
-
+  
   const markAttendance = async () => {
     if (!faceEmbedding) {
       alert("No face embedding captured!");
       return;
     }
+    console.log(faceEmbedding);
   
     const empId = userDetails?.employeeId; // ✅ Use empId safely
     if (!empId) {
@@ -111,7 +111,7 @@ const Attendance = () => {
   
     try {
       const response = await axios.post(
-        "https://face-regconition-backend.onrender.com/api/employee/mark-attendance",
+        "http://localhost:8000/api/employee/mark-attendance",
         {
           empId, // ✅ Corrected Key
           faceEmbedding,
