@@ -3,15 +3,13 @@ import { Container, Typography, Button, Grid, Box } from "@mui/material";
 import Webcam from "react-webcam";
 import * as faceapi from "face-api.js";
 import axios from "axios";
-import { jwtDecode } from "jwt-decode";
-
 
 const Attendance = () => {
   const webcamRef = useRef(null);
   const [isModelLoaded, setIsModelLoaded] = useState(false);
   const [faceEmbedding, setFaceEmbedding] = useState(null);
   const [attendanceStatus, setAttendanceStatus] = useState(null);
-  const [employeeId, setEmployeeId] = useState(null);
+  const [userDetails, setUserDetails] = useState(null);
 
   // ✅ Load face-api.js models
   useEffect(() => {
@@ -31,30 +29,28 @@ const Attendance = () => {
   }, []);
 
   useEffect(() => {
-    const authToken = localStorage.getItem("authToken");
-    if (authToken) {
+    const fetchUserDetails = async () => {
       try {
-        const decoded = jwtDecode(authToken);
-        console.log("Decoded Token:", decoded); // Debugging
-        const userId = decoded.userId;  // Extract userId from token
-  
-        // Fetch employee details from backend using userId
-        axios.get(`https://face-regconition-backend.onrender.com/api/employee/${userId}`, {
-          headers: { Authorization: `Bearer ${authToken}` }
-        })
-        .then(response => {
-          console.log("Employee Data:", response.data);
-          setEmployeeId(response.data.employeeId);  // Set employeeId from DB
-        })
-        .catch(error => {
-          console.error("Error fetching employee data:", error);
-          alert("Failed to get employee details. Please log in again.");
+        const authToken = localStorage.getItem("token");
+        if (!authToken) {
+          alert("Unauthorized! Please log in again.");
+          return;
+        }
+
+        const response = await axios.get("https://face-regconition-backend.onrender.com/api/auth/user", {
+          headers: { Authorization: `Bearer ${authToken}` },
         });
-  
+
+        setUserDetails(response.data);
+        console.log("User details fetched:", response.data);
+        console.log(response.data.employeeId);
       } catch (error) {
-        console.error("Error decoding authToken:", error);
+        console.error("Error fetching user details:", error);
+        alert("Failed to fetch user details.");
       }
-    }
+    };
+
+    fetchUserDetails();
   }, []);
   
   
@@ -83,25 +79,27 @@ const Attendance = () => {
     }
   };
 
-  // ✅ Send Attendance Data to Backend
   const markAttendance = async () => {
     if (!faceEmbedding) {
       alert("No face embedding captured!");
       return;
     }
-    if (!employeeId) {
+  
+    const empId = userDetails?.employeeId; // ✅ Use empId safely
+    if (!empId) {
       alert("Employee ID is missing. Please log in again.");
       return;
     }
-
-    const authToken = localStorage.getItem("authToken");
+  
+    const authToken = localStorage.getItem("token");
     if (!authToken) {
       alert("Unauthorized! Please log in.");
       return;
     }
+  
     console.log("Auth Token:", authToken);
     console.log("Sending Data:", {
-      employeeId,
+      empId,
       faceEmbedding,
       isLive: true,
       livenessConfidence: 0.9,
@@ -110,12 +108,12 @@ const Attendance = () => {
       deviceId: "DEVICE123",
       location: "Office Entrance",
     });
-
+  
     try {
       const response = await axios.post(
         "https://face-regconition-backend.onrender.com/api/employee/mark-attendance",
         {
-          employeeId,
+          empId, // ✅ Corrected Key
           faceEmbedding,
           isLive: true,
           livenessConfidence: 0.9,
@@ -126,7 +124,7 @@ const Attendance = () => {
         },
         { headers: { Authorization: `Bearer ${authToken}` } }
       );
-
+  
       setAttendanceStatus(response.data.msg);
       alert(response.data.msg);
     } catch (error) {
@@ -134,6 +132,8 @@ const Attendance = () => {
       alert(error.response?.data?.msg || "Attendance marking failed.");
     }
   };
+  
+  
 
   return (
     <Container maxWidth="md">

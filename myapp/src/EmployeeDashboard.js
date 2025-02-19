@@ -17,7 +17,7 @@ const EmployeeDashboard = () => {
   useEffect(() => {
     const fetchUserDetails = async () => {
       try {
-        const authToken = localStorage.getItem("authToken");
+        const authToken = localStorage.getItem("token");
         if (!authToken) {
           alert("Unauthorized! Please log in again.");
           return;
