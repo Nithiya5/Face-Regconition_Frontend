@@ -8,71 +8,95 @@ const EmployeeDashboard = () => {
   const [capturedImages, setCapturedImages] = useState([]);
   const [faceEmbeddings, setFaceEmbeddings] = useState([]);
   const [isModelLoaded, setIsModelLoaded] = useState(false);
+  const [userDetails, setUserDetails] = useState(null);
   const webcamRef = useRef(null);
 
+  // ✅ Fetch logged-in user details (employeeId & role)
+  useEffect(() => {
+    const fetchUserDetails = async () => {
+      try {
+        const authToken = localStorage.getItem("authToken"); // Only for request headers
+        if (!authToken) {
+          alert("Unauthorized! Please log in again.");
+          return;
+        }
+
+        const response = await axios.get("http://localhost:8000/api/auth/user", {
+          headers: { Authorization: `Bearer ${authToken}` },
+        });
+
+        setUserDetails(response.data);
+        console.log("User details fetched:", response.data);
+      } catch (error) {
+        console.error("Error fetching user details:", error);
+        alert("Failed to fetch user details.");
+      }
+    };
+
+    fetchUserDetails();
+  }, []);
+
+  // ✅ Load face-api.js models
   useEffect(() => {
     const loadModels = async () => {
       try {
         console.log("Loading models...");
-        await faceapi.nets.ssdMobilenetv1.loadFromUri("http://localhost:3000/models/ssd_mobilenetv1_model-weights_manifest.json");
-        await faceapi.nets.faceLandmark68Net.loadFromUri("http://localhost:3000/models/face_landmark_68_model-weights_manifest.json");
-        await faceapi.nets.faceRecognitionNet.loadFromUri("http://localhost:3000/models/face_recognition_model-weights_manifest.json");
+        await faceapi.nets.ssdMobilenetv1.loadFromUri("/models");
+        await faceapi.nets.faceLandmark68Net.loadFromUri("/models");
+        await faceapi.nets.faceRecognitionNet.loadFromUri("/models");
         setIsModelLoaded(true);
         console.log("Models loaded successfully.");
       } catch (error) {
         console.error("Error loading models:", error);
       }
     };
+
     loadModels();
   }, []);
 
+  // ✅ Capture Image & Extract Face Embeddings
   const captureImage = async () => {
     if (!isModelLoaded || capturedImages.length >= 5) return;
 
     const imageSrc = webcamRef.current.getScreenshot();
-    console.log("Captured image src:", imageSrc);
-
     setCapturedImages([...capturedImages, imageSrc]);
 
     try {
       const img = await faceapi.bufferToImage(await fetch(imageSrc).then((res) => res.blob()));
-
       const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
 
       if (detections) {
         console.log("Face detected:", detections);
-        const newEmbedding = Array.from(detections.descriptor);
-        console.log("New embedding:", newEmbedding);
-
-        setFaceEmbeddings((prevEmbeddings) => [...prevEmbeddings, newEmbedding]);
+        setFaceEmbeddings((prev) => [...prev, Array.from(detections.descriptor)]);
       } else {
-        console.log("No face detected in the image.");
+        console.log("No face detected.");
       }
     } catch (error) {
       console.error("Face detection error:", error);
     }
   };
 
+  // ✅ Submit Face Embeddings
   const handleSubmit = async () => {
-    if (faceEmbeddings.length === 0) {
-      alert("No face embeddings to submit.");
+    if (!userDetails || faceEmbeddings.length === 0) {
+      alert("No face embeddings or user details found.");
       return;
     }
 
     try {
-      const authToken = localStorage.getItem("authToken");
-      console.log("Auth Token in frontend:", authToken); // Debug: Log the token
-
+      const authToken = localStorage.getItem("authToken"); // Only for authentication header
       if (!authToken) {
         alert("Unauthorized! Please log in again.");
         return;
       }
 
-      const response = await axios.put(
+      await axios.put(
         "http://localhost:8000/api/employee/updateFaceEmbeddings",
-        { faceEmbeddings: faceEmbeddings }, // Send the array directly
-        { headers: { Authorization: `Bearer ${authToken}` } }
+        { employeeId: userDetails.employeeId, faceEmbeddings }, // Ensure it's an object
+        { headers: { Authorization: `Bearer ${authToken}`, "Content-Type": "application/json" } } // Add content type
     );
+    
+
       alert("Face embeddings updated successfully!");
     } catch (error) {
       console.error("Error updating face embeddings:", error);
@@ -85,6 +109,11 @@ const EmployeeDashboard = () => {
       <Typography variant="h4" align="center" gutterBottom>
         Employee Dashboard
       </Typography>
+      {userDetails && (
+        <Typography variant="h6" align="center">
+          Logged in as: {userDetails.employeeId} ({userDetails.role})
+        </Typography>
+      )}
       <Grid container spacing={3}>
         <Grid item xs={12} md={6}>
           <Typography variant="h6">Capture Employee Image</Typography>
