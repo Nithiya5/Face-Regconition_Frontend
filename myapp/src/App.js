@@ -10,6 +10,7 @@ import ForgotPassword from "./ForgotPassword";
 import ResetPassword from "./ResetPassword";
 import Help from "./Help";
 import Aboutus from "./Aboutus";
+import Attendance from "./Attendance";
 import "./App.css";
 
 import "./App.css"; 
@@ -82,6 +83,11 @@ const App = () => {
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="/register-employee" element={<RegisterEmployee />} />
         <Route path="/employee-dashboard" element={<EmployeeDashboard />} />
+        <Route path ="/forgot"element={<ForgotPassword/>}/>;
+        <Route path = "/reset" element ={<ResetPassword/>}/>;
+        <Route path = "/help" element ={<Help/>}/>;
+        <Route path = "/about" element ={<Aboutus/>}/>;
+        <Route path = "/attendance" element ={<Attendance/>}/>;
       </Routes>
     </div>
   );

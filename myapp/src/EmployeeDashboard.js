@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Button, Container, Typography, Grid, Box } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 import Webcam from "react-webcam";
 import * as faceapi from "face-api.js";
 import axios from "axios";
@@ -10,18 +11,19 @@ const EmployeeDashboard = () => {
   const [isModelLoaded, setIsModelLoaded] = useState(false);
   const [userDetails, setUserDetails] = useState(null);
   const webcamRef = useRef(null);
+  const navigate = useNavigate(); // ✅ Added navigate hook
 
-  // ✅ Fetch logged-in user details (employeeId & role)
+  // ✅ Fetch logged-in user details
   useEffect(() => {
     const fetchUserDetails = async () => {
       try {
-        const authToken = localStorage.getItem("authToken"); // Only for request headers
+        const authToken = localStorage.getItem("authToken");
         if (!authToken) {
           alert("Unauthorized! Please log in again.");
           return;
         }
 
-        const response = await axios.get("http://localhost:8000/api/auth/user", {
+        const response = await axios.get("https://face-regconition-backend.onrender.com/api/auth/user", {
           headers: { Authorization: `Bearer ${authToken}` },
         });
 
@@ -84,18 +86,17 @@ const EmployeeDashboard = () => {
     }
 
     try {
-      const authToken = localStorage.getItem("authToken"); // Only for authentication header
+      const authToken = localStorage.getItem("authToken");
       if (!authToken) {
         alert("Unauthorized! Please log in again.");
         return;
       }
 
       await axios.put(
-        "http://localhost:8000/api/employee/updateFaceEmbeddings",
-        { employeeId: userDetails.employeeId, faceEmbeddings }, // Ensure it's an object
-        { headers: { Authorization: `Bearer ${authToken}`, "Content-Type": "application/json" } } // Add content type
-    );
-    
+        "https://face-regconition-backend.onrender.com/api/employee/updateFaceEmbeddings",
+        { employeeId: userDetails.employeeId, faceEmbeddings },
+        { headers: { Authorization: `Bearer ${authToken}`, "Content-Type": "application/json" } }
+      );
 
       alert("Face embeddings updated successfully!");
     } catch (error) {
@@ -114,7 +115,9 @@ const EmployeeDashboard = () => {
           Logged in as: {userDetails.employeeId} ({userDetails.role})
         </Typography>
       )}
+
       <Grid container spacing={3}>
+        {/* ✅ Capture Image Section */}
         <Grid item xs={12} md={6}>
           <Typography variant="h6">Capture Employee Image</Typography>
           <Webcam ref={webcamRef} screenshotFormat="image/jpeg" style={{ width: "100%", borderRadius: 10 }} />
@@ -133,9 +136,17 @@ const EmployeeDashboard = () => {
           </Box>
         </Grid>
 
+        {/* ✅ Submit Face Embeddings Button */}
         <Grid item xs={12}>
           <Button variant="contained" color="primary" onClick={handleSubmit} style={{ width: "100%", marginTop: "20px" }}>
             Submit Face Embeddings
+          </Button>
+        </Grid>
+
+        {/* ✅ "Attendance" Button */}
+        <Grid item xs={12}>
+          <Button variant="contained" color="secondary" onClick={() => navigate("/attendance")} style={{ width: "100%" }}>
+            Attendance
           </Button>
         </Grid>
       </Grid>

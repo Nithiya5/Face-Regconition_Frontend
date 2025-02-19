@@ -1,9 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Box, Paper, Grid, Typography, TextField, MenuItem, Button } from "@mui/material";
-import LoginImage from "../src/image/Login.png"; // Adjust the path if needed
-
-
+import { TextField, Button, Box, Typography, Paper, Grid, MenuItem } from "@mui/material";
+import LoginImage from "../src/image/image.png"; // Ensure you have a login image
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -16,6 +14,7 @@ const Login = () => {
     e.preventDefault();
     setError("");
 
+    // Correct the URL with template literals
     let apiUrl = `https://face-regconition-backend.onrender.com/api/${role}/login`;
 
     try {
@@ -29,25 +28,19 @@ const Login = () => {
 
       if (!response.ok) throw new Error(data.msg || "Login failed!");
 
-      // ✅ Store token and userId correctly
-      localStorage.setItem("authToken", data.token);
-      localStorage.setItem("userId", data.userId); // Store userId if needed
+      localStorage.setItem("token", data.token);
 
       alert("Login successful!");
 
-      // ✅ Redirect based on role
-      switch (role) {
-        case "admin":
-          navigate("/admin-dashboard");
-          break;
-        case "employee":
-          navigate("/employee-dashboard");
-          break;
-        case "visitor":
-          navigate("/visitor-dashboard");
-          break;
-        default:
-          navigate("/");
+      // Redirect based on role
+      if (role === "admin") {
+        navigate("/admin-dashboard");
+      } else if (role === "employee") {
+        navigate("/employee-dashboard");
+      } else if (role === "visitor") {
+        navigate("/visitor-dashboard");
+      } else {
+        navigate("/");
       }
     } catch (err) {
       setError(err.message);
@@ -61,7 +54,7 @@ const Login = () => {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: "white",
+        backgroundColor: "white", // Light gray background
         padding: 2,
       }}
     >
@@ -71,7 +64,7 @@ const Login = () => {
           borderRadius: 3,
           overflow: "hidden",
           width: "60%",
-          backgroundColor: "#ffffff",
+          backgroundColor: "#ffffff", // White background for container
           display: "flex",
         }}
       >
@@ -87,7 +80,7 @@ const Login = () => {
               alignItems: "center",
               justifyContent: "center",
               padding: 3,
-              backgroundColor: "#ffffff",
+              backgroundColor: "#ffffff", // White background for the form
             }}
           >
             <Typography variant="h6" color="#1e40af" fontWeight="bold" mb={2}>
@@ -151,10 +144,10 @@ const Login = () => {
                 variant="contained"
                 sx={{
                   mt: 2,
-                  backgroundColor: "#1e40af",
-                  color: "#fff",
+                  backgroundColor: "#1e40af", // Blue
+                  color: "#fff", // White text
                   fontWeight: "bold",
-                  ":hover": { backgroundColor: "#3b82f6" },
+                  ":hover": { backgroundColor: "#3b82f6" }, // Lighter blue
                 }}
               >
                 Login
@@ -162,9 +155,29 @@ const Login = () => {
             </form>
           </Grid>
 
-          {/* Right Side - Image */}
-          <Grid item xs={12} md={6} sx={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 2, backgroundColor: "#ffffff" }}>
-            <Box component="img" src={LoginImage} alt="Login Illustration" sx={{ width: "90%", height: "auto", borderRadius: 2 }} />
+          {/* Right Side - Image Illustration */}
+          <Grid
+            item
+            xs={12}
+            md={6}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 2,
+              backgroundColor: "#ffffff", // White background for the image section
+            }}
+          >
+            <Box
+              component="img"
+              src={LoginImage} // Ensure you have a login image
+              alt="Login Illustration"
+              sx={{
+                width: "90%", // Adjusted width for better fit
+                height: "auto",
+                borderRadius: 2,
+              }}
+            />
           </Grid>
         </Grid>
       </Paper>
