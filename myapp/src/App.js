@@ -4,9 +4,12 @@ import aboutImage from "../src/image/About.png";
 import Login from "./Login";
 import Register from "./Register";
 import AdminDashboard from "./AdminDashboard";
-
 import RegisterEmployee from "./RegisterEmployee";
 import EmployeeDashboard from "./EmployeeDashboard";
+import ForgotPassword from "./ForgotPassword";
+import ResetPassword from "./ResetPassword";
+import Help from "./Help";
+import Aboutus from "./Aboutus";
 import "./App.css";
 
 import "./App.css"; 
