@@ -1,21 +1,13 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { TextField, Button, Box, Typography, Paper, Grid, MenuItem } from "@mui/material";
-import LoginImage from "../src/image/image.png"; // Ensure you have a login image
-
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("employee");
+  const [role, setRole] = useState("employee"); // Default role
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [quote, setQuote] = useState(""); // state to manage the random quote
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
-    setLoading(true);
 
     let apiUrl = `https://face-regconition-backend.onrender.com/api/${role}/login`;
 
@@ -30,7 +22,9 @@ const Login = () => {
 
       if (!response.ok) throw new Error(data.msg || "Login failed!");
 
-      localStorage.setItem("token", data.token);
+      // ✅ Store token and userId correctly
+      localStorage.setItem("authToken", data.token);
+      localStorage.setItem("userId", data.userId); // Store userId if needed
 
       alert("Login successful!");
 
@@ -50,31 +44,8 @@ const Login = () => {
       }
     } catch (err) {
       setError(err.message);
-    } finally {
-      setLoading(false);
     }
-
-    // Change the quote after login attempt
-    setQuote(randomQuote());
   };
-
-  // Inspirational Quotes
-  const quotes = [
-    "The only way to do great work is to love what you do. - Steve Jobs",
-    "It always seems impossible until it’s done. - Nelson Mandela",
-    "Success is not final, failure is not fatal: It is the courage to continue that counts. - Winston Churchill",
-    "Believe you can and you’re halfway there. - Theodore Roosevelt",
-    "Your limitation—it’s only your imagination.",
-    "Push yourself, because no one else is going to do it for you.",
-    "Great things never come from comfort zones.",
-  ];
-
-  const randomQuote = () => quotes[Math.floor(Math.random() * quotes.length)];
-
-  // Initialize with a random quote
-  if (!quote) {
-    setQuote(randomQuote());
-  }
 
   return (
     <Box
@@ -83,7 +54,7 @@ const Login = () => {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: "#111827",
+        backgroundColor: "white",
         padding: 2,
       }}
     >
@@ -93,11 +64,8 @@ const Login = () => {
           borderRadius: 3,
           overflow: "hidden",
           width: "60%",
-          backgroundColor: "#1f2937",
+          backgroundColor: "#ffffff",
           display: "flex",
-          flexDirection: { xs: "column", md: "row" },
-          padding: 7,
-          boxSizing: "border-box",
         }}
       >
         <Grid container spacing={0}>
@@ -112,10 +80,10 @@ const Login = () => {
               alignItems: "center",
               justifyContent: "center",
               padding: 3,
-              backgroundColor: "#1f2937",
+              backgroundColor: "#ffffff",
             }}
           >
-            <Typography variant="h6" color="#facc15" fontWeight="bold" mb={2}>
+            <Typography variant="h6" color="#1e40af" fontWeight="bold" mb={2}>
               Login
             </Typography>
             {error && (
@@ -134,9 +102,9 @@ const Login = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 InputProps={{
-                  style: { background: "#374151", color: "#f3f4f6", borderRadius: 6 },
+                  style: { background: "#e0e7ff", color: "#1e40af", borderRadius: 6 },
                 }}
-                InputLabelProps={{ style: { color: "#9ca3af" } }}
+                InputLabelProps={{ style: { color: "#1e40af" } }}
               />
               <TextField
                 fullWidth
@@ -148,9 +116,9 @@ const Login = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 InputProps={{
-                  style: { background: "#374151", color: "#f3f4f6", borderRadius: 6 },
+                  style: { background: "#e0e7ff", color: "#1e40af", borderRadius: 6 },
                 }}
-                InputLabelProps={{ style: { color: "#9ca3af" } }}
+                InputLabelProps={{ style: { color: "#1e40af" } }}
               />
               <TextField
                 fullWidth
@@ -162,9 +130,9 @@ const Login = () => {
                 onChange={(e) => setRole(e.target.value)}
                 required
                 InputProps={{
-                  style: { background: "#374151", color: "#f3f4f6", borderRadius: 6 },
+                  style: { background: "#e0e7ff", color: "#1e40af", borderRadius: 6 },
                 }}
-                InputLabelProps={{ style: { color: "#9ca3af" } }}
+                InputLabelProps={{ style: { color: "#1e40af" } }}
               >
                 <MenuItem value="employee">Employee</MenuItem>
                 <MenuItem value="admin">Admin</MenuItem>
@@ -176,10 +144,10 @@ const Login = () => {
                 variant="contained"
                 sx={{
                   mt: 2,
-                  backgroundColor: "#facc15",
-                  color: "#000",
+                  backgroundColor: "#1e40af",
+                  color: "#fff",
                   fontWeight: "bold",
-                  ":hover": { backgroundColor: "#fbbf24" },
+                  ":hover": { backgroundColor: "#3b82f6" },
                 }}
               >
                 Login
@@ -187,29 +155,9 @@ const Login = () => {
             </form>
           </Grid>
 
-          {/* Right Side - Image Illustration */}
-          <Grid
-            item
-            xs={12}
-            md={6}
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: 2,
-              backgroundColor: "#111827",
-            }}
-          >
-            <Box
-              component="img"
-              src={LoginImage} // Ensure you have a login image
-              alt="Login Illustration"
-              sx={{
-                width: "90%", // Adjusted width for better fit
-                height: "auto",
-                borderRadius: 2,
-              }}
-            />
+          {/* Right Side - Image */}
+          <Grid item xs={12} md={6} sx={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 2, backgroundColor: "#ffffff" }}>
+            <Box component="img" src={LoginImage} alt="Login Illustration" sx={{ width: "90%", height: "auto", borderRadius: 2 }} />
           </Grid>
         </Grid>
       </Paper>
