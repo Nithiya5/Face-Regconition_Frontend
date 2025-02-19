@@ -5,6 +5,7 @@ import Login from "./Login";
 import Register from "./Register";
 import AdminDashboard from "./AdminDashboard";
 import RegisterEmployee from "./RegisterEmployee";
+import EmployeeDashboard from "./EmployeeDashboard";
 import "./App.css";
 
 const Header = () => {
@@ -74,6 +75,7 @@ const App = () => {
         <Route path="/about" element={<About />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="/register-employee" element={<RegisterEmployee />} />
+        <Route path="/employee-dashboard" element={<EmployeeDashboard />} />
       </Routes>
     </div>
   );
