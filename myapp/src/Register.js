@@ -1,7 +1,19 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { TextField, Button, Box, Typography, Paper, Grid } from "@mui/material";
-import Registerimage from "../src/image/Register.png"; // Ensure correct import
+import {
+  TextField,
+  Button,
+  Box,
+  Typography,
+  Paper,
+  Grid,
+  CircularProgress,
+  Alert,
+  Link,
+} from "@mui/material";
+import PersonAddIcon from "@mui/icons-material/PersonAdd"; // Register icon
+import { Carousel } from "react-responsive-carousel"; // Import Carousel
+import "react-responsive-carousel/lib/styles/carousel.min.css"; // Import Carousel CSS
 
 const Register = () => {
   const [fullName, setFullName] = useState("");
@@ -9,11 +21,14 @@ const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [quote, setQuote] = useState(""); // State to store the quote
   const navigate = useNavigate();
 
   const handleRegister = async (e) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
 
     try {
       const response = await fetch("https://face-regconition-backend.onrender.com/api/register", {
@@ -29,150 +44,188 @@ const Register = () => {
       navigate("/login");
     } catch (err) {
       setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
+  // Inspirational Quotes for the register page
+  const quotes = [
+    "The best way to predict your future is to create it. - Abraham Lincoln",
+    "Don't watch the clock; do what it does. Keep going. - Sam Levenson",
+    "Success is the sum of small efforts, repeated day in and day out. - Robert Collier",
+    "Your time is limited, so don't waste it living someone else's life. - Steve Jobs",
+    "Believe in yourself, push your limits, and do whatever it takes to conquer your goals.",
+  ];
+
+  // Set a random quote when the page is first loaded
+  useEffect(() => {
+    const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+    setQuote(randomQuote);
+  }, []); // Empty dependency array ensures it only runs on mount
+
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "#111827",
-        padding: 2,
-      }}
-    >
+    <Box sx={{ minHeight: "100vh", display: "flex", justifyContent: "center", alignItems: "center", backgroundColor: "#f3f4f6" }}>
       <Paper
         elevation={4}
         sx={{
           borderRadius: 3,
           overflow: "hidden",
-          width: "60%",
-          backgroundColor: "#1f2937",
+          width: "100%",
+          height: "100vh",
           display: "flex",
+          flexDirection: { xs: "column", md: "row" },
+          padding: 7,
+          boxSizing: "border-box",
         }}
       >
-        <Grid container spacing={0}>
-          {/* Left Side - Registration Form */}
-          <Grid
-            item
-            xs={12}
-            md={6}
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: 3,
-              backgroundColor: "#1f2937",
-            }}
-          >
-            <Typography variant="h6" color="#facc15" fontWeight="bold" mb={2}>
-              Register
-            </Typography>
-            {error && (
-              <Typography color="error" fontSize="14px" mb={1}>
-                {error}
-              </Typography>
-            )}
-            <form onSubmit={handleRegister} style={{ width: "90%" }}>
-              <TextField
-                fullWidth
-                label="Full Name"
-                variant="outlined"
-                margin="dense"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                required
-                InputProps={{
-                  style: { background: "#374151", color: "#f3f4f6", borderRadius: 6 },
-                }}
-                InputLabelProps={{ style: { color: "#9ca3af" } }}
-              />
-              <TextField
-                fullWidth
-                label="Username"
-                variant="outlined"
-                margin="dense"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-                InputProps={{
-                  style: { background: "#374151", color: "#f3f4f6", borderRadius: 6 },
-                }}
-                InputLabelProps={{ style: { color: "#9ca3af" } }}
-              />
-              <TextField
-                fullWidth
-                label="Email"
-                type="email"
-                variant="outlined"
-                margin="dense"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                InputProps={{
-                  style: { background: "#374151", color: "#f3f4f6", borderRadius: 6 },
-                }}
-                InputLabelProps={{ style: { color: "#9ca3af" } }}
-              />
-              <TextField
-                fullWidth
-                label="Password"
-                type="password"
-                variant="outlined"
-                margin="dense"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                InputProps={{
-                  style: { background: "#374151", color: "#f3f4f6", borderRadius: 6 },
-                }}
-                InputLabelProps={{ style: { color: "#9ca3af" } }}
-              />
-              <Button
-                type="submit"
-                fullWidth
-                variant="contained"
-                sx={{
-                  mt: 2,
-                  backgroundColor: "#facc15",
-                  color: "#000",
-                  fontWeight: "bold",
-                  ":hover": { backgroundColor: "#fbbf24" },
-                }}
-              >
-                Register
-              </Button>
-            </form>
-          </Grid>
+        {/* Left Side - Registration Form */}
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            flex: 1.2,
+            padding: 2,
+            backgroundColor: "#ffffff",
+          }}
+        >
+          <Typography variant="h5" color="#1e40af" fontWeight="bold" mb={2} display="flex" alignItems="center">
+            <PersonAddIcon sx={{ mr: 1 }} />
+            Register
+          </Typography>
 
-          {/* Right Side - Image Illustration */}
-          <Grid
-            item
-            xs={12}
-            md={6}
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: 2,
-              backgroundColor: "#111827",
-            }}
-          >
-            <Box
-              component="img"
-              src={Registerimage} // Ensure correct import and usage
-              alt="Register Illustration"
-              sx={{
-                width: "90%", // Adjusted width for better fit
-                height: "auto",
-                borderRadius: 2,
-              }}
+          {/* Registration Prompt */}
+          <Typography variant="body2" color="textSecondary" align="center" sx={{ mb: 2, fontStyle: "italic", fontSize: "14px" }}>
+            "Start your journey with us. Register to get started!"
+          </Typography>
+
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
+
+          <form onSubmit={handleRegister} style={{ width: "90%" }}>
+            <TextField
+              fullWidth
+              label="Full Name"
+              variant="outlined"
+              margin="dense"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              required
+              sx={{ mb: 2, backgroundColor: "#e0e7ff" }}
             />
-          </Grid>
-        </Grid>
+            <TextField
+              fullWidth
+              label="Username"
+              variant="outlined"
+              margin="dense"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              sx={{ mb: 2, backgroundColor: "#e0e7ff" }}
+            />
+            <TextField
+              fullWidth
+              label="Email"
+              type="email"
+              variant="outlined"
+              margin="dense"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              sx={{ mb: 2, backgroundColor: "#e0e7ff" }}
+            />
+            <TextField
+              fullWidth
+              label="Password"
+              type="password"
+              variant="outlined"
+              margin="dense"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              sx={{ mb: 2, backgroundColor: "#e0e7ff" }}
+            />
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              sx={{
+                mt: 2,
+                backgroundColor: "#1e40af",
+                color: "#fff",
+                fontWeight: "bold",
+                ":hover": { backgroundColor: "#3b82f6" },
+              }}
+              disabled={loading}
+              startIcon={<PersonAddIcon />}
+            >
+              {loading ? <CircularProgress size={24} color="inherit" /> : "Register"}
+            </Button>
+          </form>
+
+          {/* Already have an account? Link */}
+          <Box sx={{ display: "flex", justifyContent: "center", width: "100%", mt: 2 }}>
+            <Link
+              href="/login"
+              sx={{
+                color: "#1e40af",
+                textDecoration: "none",
+                fontSize: "19px",
+                display: "flex",
+                alignItems: "center",
+                "&:hover": { textDecoration: "underline" },
+              }}
+            >
+              Already have an account? Login
+            </Link>
+          </Box>
+
+          {/* Inspirational Quote */}
+          <Typography variant="body2" color="textSecondary" align="center" sx={{ mt: 4, fontStyle: "italic", fontSize: "16px" }}>
+            "{quote}"
+          </Typography>
+        </Box>
+
+        {/* Right Side - Image Slideshow */}
+        <Box
+          sx={{
+            flex: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 2,
+            backgroundColor: "#ffffff",
+          }}
+        >
+          <Carousel autoPlay infiniteLoop showThumbs={false} showStatus={false} interval={2000}>
+            <div>
+              <img
+                src="https://img.freepik.com/premium-vector/online-registration-illustration-design-concept-websites-landing-pages-other_108061-938.jpg"
+                alt="Register Illustration 1"
+                style={{ height: "90%", objectFit: "cover" }}
+              />
+            </div>
+            <div>
+              <img
+                src="https://img.freepik.com/free-vector/mobile-login-concept-illustration_114360-83.jpg"
+                alt="Register Illustration 3"
+                style={{ height: "90%", objectFit: "cover" }}
+              />
+            </div>
+            <div>
+              <img
+                src="https://cdni.iconscout.com/illustration/premium/thumb/online-registration-illustration-download-in-svg-png-gif-file-formats--user-register-form-sign-create-account-pack-network-communication-illustrations-6381807.png"
+                alt="Register Illustration 2"
+                style={{ height: "90%", objectFit: "cover" }}
+              />
+            </div>
+          </Carousel>
+        </Box>
       </Paper>
     </Box>
   );

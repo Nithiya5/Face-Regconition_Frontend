@@ -4,9 +4,13 @@ import aboutImage from "../src/image/About.png";
 import Login from "./Login";
 import Register from "./Register";
 import AdminDashboard from "./AdminDashboard";
+<<<<<<< HEAD
 import RegisterEmployee from "./RegisterEmployee";
 import EmployeeDashboard from "./EmployeeDashboard";
 import "./App.css";
+=======
+import "./App.css"; 
+>>>>>>> 8c91a86e25470edcfdbc3f0dcf01e694a7326f39
 
 const Header = () => {
   return (
@@ -17,7 +21,7 @@ const Header = () => {
         <Link to="/login" className="nav-link">Login</Link>
         <Link to="/register" className="nav-link">Register</Link>
         <Link to="/about" className="nav-link">About Us</Link>
-        <a href="#" className="nav-link">Help</a>
+        <Link to="/help" className="nav-link">Help</Link>
       </nav>
     </header>
   );
@@ -72,10 +76,12 @@ const App = () => {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/about" element={<About />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
+<<<<<<< HEAD
         <Route path="/register-employee" element={<RegisterEmployee />} />
         <Route path="/employee-dashboard" element={<EmployeeDashboard />} />
+=======
+>>>>>>> 8c91a86e25470edcfdbc3f0dcf01e694a7326f39
       </Routes>
     </div>
   );

@@ -18,64 +18,107 @@ const AdminDashboard = () => {
     setSearchQuery((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Fetch employee data based on search parameters
-  const handleSearch = async () => {
-    setLoading(true);
-    const { employeeId, department, designation } = searchQuery;
-
-    try {
-      const response = await axios.get("https://your-backend-url.com/api/admin/employees", {
-        params: { employeeId, department, designation },
-      });
-      setEmployees(response.data); // Assuming response contains an array of employee objects
-    } catch (error) {
-      console.error("Error fetching employee data:", error);
+  const captureImage = async () => {
+    if (capturedImages.length >= 5) {
+      alert("You can only capture up to 5 images.");
+      return;
     }
 
-    setLoading(false);
+    const imageSrc = webcamRef.current.getScreenshot();
+    if (imageSrc) {
+      setCapturedImages((prevImages) => [...prevImages, imageSrc]);
+
+      try {
+        // Wait until models are loaded before performing face detection
+        if (!isModelLoaded) {
+          alert("Please wait for the models to load before capturing images.");
+          return;
+        }
+
+        // Convert the base64 image to a Blob using fetch
+        const blob = await (await fetch(imageSrc)).blob();
+
+        // Convert the Blob to an image using face-api.js
+        const img = await faceapi.bufferToImage(blob);
+
+        // Detect the face and get landmarks and embeddings
+        const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
+        
+        if (detections) {
+          setFaceEmbeddings((prevEmbeddings) => [
+            ...prevEmbeddings,
+            detections.descriptor,
+          ]);
+        } else {
+          alert("No face detected in the image.");
+        }
+      } catch (error) {
+        console.error("Error processing the image:", error);
+        alert("There was an error processing the image.");
+      }
+    } else {
+      console.error("No image captured");
+    }
   };
 
-  // Render employee details in a table
-  const renderEmployeeTable = () => {
-    if (employees.length === 0) {
-      return <Typography>No employee data found</Typography>;
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (capturedImages.length === 0) {
+      alert("Please capture at least one image.");
+      return;
     }
 
-    return (
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>Employee ID</TableCell>
-            <TableCell>Name</TableCell>
-            <TableCell>Department</TableCell>
-            <TableCell>Designation</TableCell>
-            <TableCell>Email</TableCell>
-            <TableCell>Phone</TableCell>
-            <TableCell>Actions</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {employees.map((employee) => (
-            <TableRow key={employee.employeeId}>
-              <TableCell>{employee.employeeId}</TableCell>
-              <TableCell>{employee.name}</TableCell>
-              <TableCell>{employee.department}</TableCell>
-              <TableCell>{employee.designation}</TableCell>
-              <TableCell>{employee.email}</TableCell>
-              <TableCell>{employee.phone}</TableCell>
-              <TableCell>
-                <Button variant="outlined" color="primary" style={{ margin: "0 5px" }}>
-                  Edit
-                </Button>
-                <Button variant="outlined" color="secondary" style={{ margin: "0 5px" }}>
-                  Delete
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    );
+    if (faceEmbeddings.length === 0) {
+      alert("Please capture face embeddings.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("employeeId", employeeData.employeeId);
+    formData.append("name", employeeData.name);
+    formData.append("department", employeeData.department);
+    formData.append("designation", employeeData.designation);
+    formData.append("email", employeeData.email);
+    formData.append("phone", employeeData.phone);
+    formData.append("password", employeeData.password);
+    formData.append("canAddVisitor", employeeData.canAddVisitor);
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Authentication token missing. Please log in.");
+      return;
+    }
+
+    try {
+      // Convert images into Blob format before appending
+      for (let i = 0; i < capturedImages.length; i++) {
+        const response = await fetch(capturedImages[i]);
+        const blob = await response.blob();
+        formData.append("images", blob, `image${i + 1}.jpg`);
+      }
+
+      // Add face embeddings as JSON string
+      formData.append("faceEmbeddings", JSON.stringify(faceEmbeddings));
+
+      await axios.post(
+        "https://face-regconition-backend.onrender.com/api/admin/registerEmployee",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      alert("Employee registered successfully!");
+      setCapturedImages([]);
+      setFaceEmbeddings([]);
+    } catch (error) {
+      console.error("Upload error:", error);
+      alert(error.response?.data?.error || "Error uploading images");
+    }
   };
 
   return (
