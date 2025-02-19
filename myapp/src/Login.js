@@ -1,3 +1,8 @@
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { TextField, Button, Box, Typography, Paper, Grid, MenuItem } from "@mui/material";
+import LoginImage from "../src/image/image.png"; // Ensure this image exists
+
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

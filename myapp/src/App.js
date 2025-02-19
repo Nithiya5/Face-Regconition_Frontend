@@ -4,13 +4,14 @@ import aboutImage from "../src/image/About.png";
 import Login from "./Login";
 import Register from "./Register";
 import AdminDashboard from "./AdminDashboard";
-<<<<<<< HEAD
 import RegisterEmployee from "./RegisterEmployee";
 import EmployeeDashboard from "./EmployeeDashboard";
+import ForgotPassword from "./ForgotPassword";
+import ResetPassword from "./ResetPassword";
+import Help from "./Help";
+import Aboutus from "./Aboutus";
 import "./App.css";
-=======
-import "./App.css"; 
->>>>>>> 8c91a86e25470edcfdbc3f0dcf01e694a7326f39
+
 
 const Header = () => {
   return (
@@ -77,11 +78,13 @@ const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
-<<<<<<< HEAD
         <Route path="/register-employee" element={<RegisterEmployee />} />
         <Route path="/employee-dashboard" element={<EmployeeDashboard />} />
-=======
->>>>>>> 8c91a86e25470edcfdbc3f0dcf01e694a7326f39
+        <Route path ="/forgot"element={<ForgotPassword/>}/>;
+        <Route path = "/reset" element ={<ResetPassword/>}/>;
+        <Route path = "/help" element ={<Help/>}/>;
+        <Route path = "/about" element ={<Aboutus/>}/>;
+
       </Routes>
     </div>
   );
