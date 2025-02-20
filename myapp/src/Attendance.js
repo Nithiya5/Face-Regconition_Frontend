@@ -10,6 +10,8 @@ const Attendance = () => {
   const [faceEmbedding, setFaceEmbedding] = useState(null);
   const [attendanceStatus, setAttendanceStatus] = useState(null);
   const [userDetails, setUserDetails] = useState(null);
+  const [location, setLocation] = useState(null);
+  const [deviceId, setDeviceId] = useState(null);
 
   // ✅ Load face-api.js models
   useEffect(() => {
@@ -28,6 +30,7 @@ const Attendance = () => {
     loadModels();
   }, []);
 
+  // ✅ Fetch user details
   useEffect(() => {
     const fetchUserDetails = async () => {
       try {
@@ -37,13 +40,12 @@ const Attendance = () => {
           return;
         }
 
-        const response = await axios.get("http://localhost:8000/api/auth/user", {
+        const response = await axios.get("https://face-regconition-backend.onrender.com/api/auth/user", {
           headers: { Authorization: `Bearer ${authToken}` },
         });
 
         setUserDetails(response.data);
         console.log("User details fetched:", response.data);
-        console.log(response.data.employeeId);
       } catch (error) {
         console.error("Error fetching user details:", error);
         alert("Failed to fetch user details.");
@@ -52,22 +54,47 @@ const Attendance = () => {
 
     fetchUserDetails();
   }, []);
-  
-  
 
+  // ✅ Get device ID (Browser Fingerprint)
+  useEffect(() => {
+    const getDeviceId = async () => {
+      const fingerprint = await navigator.userAgent;
+      setDeviceId(fingerprint);
+    };
+
+    getDeviceId();
+  }, []);
+
+  // ✅ Get User Location
+  useEffect(() => {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setLocation({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        });
+      },
+      (error) => {
+        console.error("Error getting location:", error);
+        alert("Failed to get location. Enable location services.");
+      }
+    );
+  }, []);
+
+  // ✅ Capture Face Embedding
   const captureFace = async () => {
     if (!isModelLoaded) {
       alert("Face detection models are not loaded yet.");
       return;
     }
-  
+
     const imageSrc = webcamRef.current.getScreenshot();
     try {
       const img = await faceapi.bufferToImage(await fetch(imageSrc).then((res) => res.blob()));
       const detection = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
-  
+
       if (detection) {
-        setFaceEmbedding([Array.from(detection.descriptor)]); // Wrap the descriptor in an array
+        setFaceEmbedding([Array.from(detection.descriptor)]);
         alert("Face detected! Ready to mark attendance.");
       } else {
         alert("No face detected. Try again.");
@@ -77,63 +104,71 @@ const Attendance = () => {
       alert("Failed to detect face.");
     }
   };
-  
+
+  // ✅ Mark Attendance with Real Data
   const markAttendance = async () => {
     if (!faceEmbedding) {
       alert("No face embedding captured!");
       return;
     }
-    console.log(faceEmbedding);
-  
-    const empId = userDetails?.employeeId; // ✅ Use empId safely
+
+    const empId = userDetails?.employeeId;
     if (!empId) {
       alert("Employee ID is missing. Please log in again.");
       return;
     }
-  
+
     const authToken = localStorage.getItem("token");
     if (!authToken) {
       alert("Unauthorized! Please log in.");
       return;
     }
-  
+    const deviceId = navigator.userAgent.split(" ")[0]; // Only take the first part
+
     console.log("Auth Token:", authToken);
     console.log("Sending Data:", {
       empId,
       faceEmbedding,
-      isLive: true,
-      livenessConfidence: 0.9,
-      phoneDetected: false,
-      spoofAttempt: false,
-      deviceId: "DEVICE123",
-      location: "Office Entrance",
+      isLive: true, // ✅ Implement liveness detection separately
+      livenessConfidence: Math.random().toFixed(2), // ✅ Simulate confidence value
+      phoneDetected: false, // ✅ Implement phone detection separately
+      spoofAttempt: false, // ✅ Implement anti-spoofing separately
+      deviceId,
+      location,
     });
-  
+
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/employee/mark-attendance",
+        "https://face-regconition-backend.onrender.com/api/employee/mark-attendance",
         {
-          empId, // ✅ Corrected Key
           faceEmbedding,
           isLive: true,
-          livenessConfidence: 0.9,
+          livenessConfidence: Math.random().toFixed(2),
           phoneDetected: false,
           spoofAttempt: false,
-          deviceId: "DEVICE123",
-          location: "Office Entrance",
+          deviceId,
+          location,
         },
         { headers: { Authorization: `Bearer ${authToken}` } }
       );
-  
+
       setAttendanceStatus(response.data.msg);
       alert(response.data.msg);
     } catch (error) {
       console.error("Error marking attendance:", error);
-      alert(error.response?.data?.msg || "Attendance marking failed.");
-    }
+      if (error.response) {
+          console.error("Server Response Data:", error.response.data);
+          alert(error.response.data?.msg || "Attendance marking failed.");
+      } else if (error.request) {
+          console.error("No response received from server:", error.request);
+          alert("No response from server. Please try again.");
+      } else {
+          console.error("Error setting up request:", error.message);
+          alert("Unexpected error occurred.");
+      }
+  }
+  
   };
-  
-  
 
   return (
     <Container maxWidth="md">

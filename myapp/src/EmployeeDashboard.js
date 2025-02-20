@@ -80,13 +80,17 @@ const EmployeeDashboard = () => {
 
   // ✅ Submit Face Embeddings
   const handleSubmit = async () => {
-    if (!userDetails || faceEmbeddings.length === 0) {
-      alert("No face embeddings or user details found.");
+    if (!userDetails) {
+      alert("No user details found.");
+      return;
+    }
+    if(faceEmbeddings.length === 0){
+      alert("No face embeddings.");
       return;
     }
 
     try {
-      const authToken = localStorage.getItem("authToken");
+      const authToken = localStorage.getItem("token");
       if (!authToken) {
         alert("Unauthorized! Please log in again.");
         return;
