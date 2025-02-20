@@ -11,7 +11,7 @@ const EmployeeDashboard = () => {
   const [isModelLoaded, setIsModelLoaded] = useState(false);
   const [userDetails, setUserDetails] = useState(null);
   const webcamRef = useRef(null);
-  const navigate = useNavigate(); // ✅ Added navigate hook
+  const navigate = useNavigate();
 
   // ✅ Fetch logged-in user details
   useEffect(() => {
@@ -84,7 +84,7 @@ const EmployeeDashboard = () => {
       alert("No user details found.");
       return;
     }
-    if(faceEmbeddings.length === 0){
+    if (faceEmbeddings.length === 0) {
       alert("No face embeddings.");
       return;
     }
@@ -103,6 +103,7 @@ const EmployeeDashboard = () => {
       );
 
       alert("Face embeddings updated successfully!");
+      window.location.reload(); // Refresh to update UI
     } catch (error) {
       console.error("Error updating face embeddings:", error);
       alert("Failed to update face embeddings.");
@@ -114,6 +115,7 @@ const EmployeeDashboard = () => {
       <Typography variant="h4" align="center" gutterBottom>
         Employee Dashboard
       </Typography>
+
       {userDetails && (
         <Typography variant="h6" align="center">
           Logged in as: {userDetails.employeeId} ({userDetails.role})
@@ -121,38 +123,59 @@ const EmployeeDashboard = () => {
       )}
 
       <Grid container spacing={3}>
-        {/* ✅ Capture Image Section */}
-        <Grid item xs={12} md={6}>
-          <Typography variant="h6">Capture Employee Image</Typography>
-          <Webcam ref={webcamRef} screenshotFormat="image/jpeg" style={{ width: "100%", borderRadius: 10 }} />
-          <Button variant="contained" color="primary" onClick={captureImage} style={{ marginTop: "20px" }}>
-            Capture Image
-          </Button>
-          <Box mt={2}>
-            {capturedImages.length > 0 && <Typography variant="body1">Captured Images:</Typography>}
-            <Grid container spacing={2}>
-              {capturedImages.map((image, index) => (
-                <Grid item xs={4} key={index}>
-                  <img src={image} alt={`captured-${index}`} style={{ width: "100%", borderRadius: 10 }} />
+        {/* ✅ Show Attendance Button if Face Embeddings Exist */}
+        {userDetails?.hasFaceEmbeddings ? (
+          <Grid item xs={12}>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={() => navigate("/attendance")}
+              style={{ width: "100%" }}
+            >
+              Attendance
+            </Button>
+          </Grid>
+        ) : (
+          <>
+            {/* ✅ Show Webcam & Capture Button if Face Embeddings Not Found */}
+            <Grid item xs={12} md={6}>
+              <Typography variant="h6">Capture Employee Image</Typography>
+              <Webcam ref={webcamRef} screenshotFormat="image/jpeg" style={{ width: "100%", borderRadius: 10 }} />
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={captureImage}
+                style={{ marginTop: "20px" }}
+                disabled={capturedImages.length >= 5}
+              >
+                Capture Image
+              </Button>
+              <Box mt={2}>
+                {capturedImages.length > 0 && <Typography variant="body1">Captured Images:</Typography>}
+                <Grid container spacing={2}>
+                  {capturedImages.map((image, index) => (
+                    <Grid item xs={4} key={index}>
+                      <img src={image} alt={`captured-${index}`} style={{ width: "100%", borderRadius: 10 }} />
+                    </Grid>
+                  ))}
                 </Grid>
-              ))}
+              </Box>
             </Grid>
-          </Box>
-        </Grid>
 
-        {/* ✅ Submit Face Embeddings Button */}
-        <Grid item xs={12}>
-          <Button variant="contained" color="primary" onClick={handleSubmit} style={{ width: "100%", marginTop: "20px" }}>
-            Submit Face Embeddings
-          </Button>
-        </Grid>
-
-        {/* ✅ "Attendance" Button */}
-        <Grid item xs={12}>
-          <Button variant="contained" color="secondary" onClick={() => navigate("/attendance")} style={{ width: "100%" }}>
-            Attendance
-          </Button>
-        </Grid>
+            {/* ✅ Submit Face Embeddings Button */}
+            <Grid item xs={12}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleSubmit}
+                style={{ width: "100%", marginTop: "20px" }}
+                disabled={faceEmbeddings.length === 0}
+              >
+                Submit Face Embeddings
+              </Button>
+            </Grid>
+          </>
+        )}
       </Grid>
     </Container>
   );
