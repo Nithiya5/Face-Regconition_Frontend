@@ -31,7 +31,7 @@ const Register = () => {
     setLoading(true);
 
     try {
-      const response = await fetch("https://face-regconition-backend.onrender.com/api/register", {
+      const response = await fetch("https://face-regconition-backend.onrender.com/api/employee/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ fullName, username, email, password }),
