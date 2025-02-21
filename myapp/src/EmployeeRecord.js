@@ -81,7 +81,7 @@ const EmployeeRecord = () => {
   };
 
   const handleEditOpen = (employee) => {
-    setSelectedEmployee({ ...employee }); // Clone employee object
+    setSelectedEmployee({ ...employee }); 
     setEditDialogOpen(true);
   };
 
@@ -111,7 +111,6 @@ const EmployeeRecord = () => {
 
   return (
     <Box sx={{ display: "flex", backgroundColor: "white", minHeight: "100vh" }}>
-      {/* Sidebar */}
       <Drawer
         variant="permanent"
         sx={{
@@ -146,13 +145,11 @@ const EmployeeRecord = () => {
         </List>
       </Drawer>
 
-      {/* Main Content */}
       <Container maxWidth="lg" sx={{ mt: 5, flexGrow: 1 }}>
         <Typography variant="h4" align="center" sx={{ fontWeight: "bold", color: "#283593" }} gutterBottom>
           Employee Records
         </Typography>
 
-        {/* Search Form */}
         <Card elevation={3} sx={{ mb: 2 }}>
           <CardContent>
             <Typography variant="h6"><Search sx={{ mr: 1 }} /> <b>Search Employees</b></Typography>
@@ -167,7 +164,6 @@ const EmployeeRecord = () => {
           </CardContent>
         </Card>
 
-        {/* Employee Table */}
         <Card elevation={3}>
           <CardContent>
             <Table>
@@ -198,7 +194,6 @@ const EmployeeRecord = () => {
           </CardContent>
         </Card>
 
-        {/* Edit Employee Dialog */}
         <Dialog open={editDialogOpen} onClose={handleEditClose}>
           <DialogTitle>Edit Employee</DialogTitle>
           <DialogContent>
