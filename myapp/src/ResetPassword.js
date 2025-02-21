@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Box, Paper, Grid, Typography, TextField, Button, IconButton } from "@mui/material";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import axios from "axios"; // To make API calls
+import axios from "axios"; 
 
 export default function ResetPassword() {
   const [password, setPassword] = useState("");
@@ -12,12 +12,11 @@ export default function ResetPassword() {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  const token = new URLSearchParams(window.location.search).get("token"); // Get token from URL
+  const token = new URLSearchParams(window.location.search).get("token"); 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate form inputs
     if (!password || !confirmPassword) {
       setError("Please fill in both password fields.");
       return;
@@ -32,24 +31,20 @@ export default function ResetPassword() {
     }
 
     try {
-      setError(""); // Clear any previous errors
+      setError(""); 
 
-      // Prepare data to send to the backend
       const data = {
         token: token,
         password: password,
         confirmPassword: confirmPassword,
       };
 
-      // Make API request to reset password
       const response = await axios.post("https://your-backend-url/api/employee/resetPassword", data);
 
-      // Handle success response
       setSuccessMessage(response.data.message);
-      setPassword(""); // Clear form inputs
+      setPassword(""); 
       setConfirmPassword("");
     } catch (err) {
-      // Handle error response
       if (err.response) {
         setError(err.response.data.error);
       } else {
@@ -75,12 +70,11 @@ export default function ResetPassword() {
           borderRadius: 3,
           overflow: "hidden",
           width: "60%",
-          backgroundColor: "#ffffff", // White background for container
+          backgroundColor: "#ffffff", 
           display: "flex",
         }}
       >
         <Grid container spacing={0}>
-          {/* Left Side - Reset Password Form */}
           <Grid
             item
             xs={12}
@@ -91,7 +85,7 @@ export default function ResetPassword() {
               alignItems: "center",
               justifyContent: "center",
               padding: 3,
-              backgroundColor: "#ffffff", // White background for the form
+              backgroundColor: "#ffffff", 
             }}
           >
             <Typography variant="h6" color="#1e40af" fontWeight="bold" mb={2}>
@@ -99,7 +93,6 @@ export default function ResetPassword() {
             </Typography>
 
             <form style={{ width: "90%" }} onSubmit={handleSubmit}>
-              {/* Password Field */}
               <TextField
                 fullWidth
                 label="Password"
@@ -121,7 +114,6 @@ export default function ResetPassword() {
                 }}
               />
 
-              {/* Confirm Password Field */}
               <TextField
                 fullWidth
                 label="Confirm Password"
@@ -143,10 +135,8 @@ export default function ResetPassword() {
                 }}
               />
 
-              {/* Error Message */}
               {error && <Typography color="error" variant="body2" sx={{ marginTop: 2 }}>{error}</Typography>}
 
-              {/* Success Message */}
               {successMessage && <Typography color="success" variant="body2" sx={{ marginTop: 2 }}>{successMessage}</Typography>}
 
               <Button
@@ -166,7 +156,6 @@ export default function ResetPassword() {
             </form>
           </Grid>
 
-          {/* Right Side - Image Illustration (optional) */}
           <Grid
             item
             xs={12}

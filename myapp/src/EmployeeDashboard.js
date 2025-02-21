@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Button, Container, Typography, Grid, Box } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { Button, Container, Typography, Grid, Box, Paper, TextField } from "@mui/material";
 import Webcam from "react-webcam";
 import * as faceapi from "face-api.js";
 import axios from "axios";
+import Sidebar from "./Sidebar";
+import myImage from "./image/Profile.png"
 
 const EmployeeDashboard = () => {
   const [capturedImages, setCapturedImages] = useState([]);
@@ -11,11 +12,9 @@ const EmployeeDashboard = () => {
   const [isModelLoaded, setIsModelLoaded] = useState(false);
   const [userDetails, setUserDetails] = useState(null);
   const webcamRef = useRef(null);
-  const navigate = useNavigate();
 
-  // ✅ Fetch logged-in user details
   useEffect(() => {
-    const fetchUserDetails = async () => {
+    const fetchEmployeeDetails = async () => {
       try {
         const authToken = localStorage.getItem("token");
         if (!authToken) {
@@ -23,22 +22,22 @@ const EmployeeDashboard = () => {
           return;
         }
 
-        const response = await axios.get("https://face-regconition-backend.onrender.com/api/auth/user", {
-          headers: { Authorization: `Bearer ${authToken}` },
-        });
+        const response = await axios.get(
+          "https://face-regconition-backend.onrender.com/api/employee/viewEmployeeDetails",
+          { headers: { Authorization: `Bearer ${authToken}` } }
+        );
 
+        console.log("Employee details fetched:", response.data);
         setUserDetails(response.data);
-        console.log("User details fetched:", response.data);
       } catch (error) {
-        console.error("Error fetching user details:", error);
-        alert("Failed to fetch user details.");
+        console.error("Error fetching employee details:", error);
+        alert("Failed to fetch employee details.");
       }
     };
 
-    fetchUserDetails();
+    fetchEmployeeDetails();
   }, []);
 
-  // ✅ Load face-api.js models
   useEffect(() => {
     const loadModels = async () => {
       try {
@@ -56,7 +55,6 @@ const EmployeeDashboard = () => {
     loadModels();
   }, []);
 
-  // ✅ Capture Image & Extract Face Embeddings
   const captureImage = async () => {
     if (!isModelLoaded || capturedImages.length >= 5) return;
 
@@ -78,7 +76,6 @@ const EmployeeDashboard = () => {
     }
   };
 
-  // ✅ Submit Face Embeddings
   const handleSubmit = async () => {
     if (!userDetails) {
       alert("No user details found.");
@@ -103,7 +100,7 @@ const EmployeeDashboard = () => {
       );
 
       alert("Face embeddings updated successfully!");
-      window.location.reload(); // Refresh to update UI
+      window.location.reload();
     } catch (error) {
       console.error("Error updating face embeddings:", error);
       alert("Failed to update face embeddings.");
@@ -111,73 +108,56 @@ const EmployeeDashboard = () => {
   };
 
   return (
-    <Container maxWidth="md">
-      <Typography variant="h4" align="center" gutterBottom>
-        Employee Dashboard
-      </Typography>
-
-      {userDetails && (
-        <Typography variant="h6" align="center">
-          Logged in as: {userDetails.employeeId} ({userDetails.role})
-        </Typography>
-      )}
-
-      <Grid container spacing={3}>
-        {/* ✅ Show Attendance Button if Face Embeddings Exist */}
-        {userDetails?.hasFaceEmbeddings ? (
-          <Grid item xs={12}>
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={() => navigate("/attendance")}
-              style={{ width: "100%" }}
-            >
-              Attendance
-            </Button>
-          </Grid>
-        ) : (
-          <>
-            {/* ✅ Show Webcam & Capture Button if Face Embeddings Not Found */}
-            <Grid item xs={12} md={6}>
-              <Typography variant="h6">Capture Employee Image</Typography>
-              <Webcam ref={webcamRef} screenshotFormat="image/jpeg" style={{ width: "100%", borderRadius: 10 }} />
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={captureImage}
-                style={{ marginTop: "20px" }}
-                disabled={capturedImages.length >= 5}
-              >
-                Capture Image
-              </Button>
-              <Box mt={2}>
-                {capturedImages.length > 0 && <Typography variant="body1">Captured Images:</Typography>}
-                <Grid container spacing={2}>
-                  {capturedImages.map((image, index) => (
-                    <Grid item xs={4} key={index}>
-                      <img src={image} alt={`captured-${index}`} style={{ width: "100%", borderRadius: 10 }} />
-                    </Grid>
-                  ))}
-                </Grid>
-              </Box>
-            </Grid>
-
-            {/* ✅ Submit Face Embeddings Button */}
-            <Grid item xs={12}>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleSubmit}
-                style={{ width: "100%", marginTop: "20px" }}
-                disabled={faceEmbeddings.length === 0}
-              >
-                Submit Face Embeddings
-              </Button>
-            </Grid>
-          </>
-        )}
+    <Grid container sx={{ backgroundColor: "#f0f2f5", minHeight: "100vh", display: "flex" }}>
+      <Grid item xs={2}>
+        <Sidebar />
       </Grid>
-    </Container>
+
+      <Grid item xs={10}>
+        <Container maxWidth="md" sx={{ padding: 4 }}>
+          {userDetails && (
+            <Paper elevation={4} sx={{ padding: 4, borderRadius: 3, backgroundColor: "white" }}>
+              <Grid container spacing={3} alignItems="center">
+                
+                <Grid item xs={12} md={6}>
+                  <TextField fullWidth label="Name" value={userDetails.name} variant="outlined" margin="dense" disabled />
+                  <TextField fullWidth label="Department" value={userDetails.department} variant="outlined" margin="dense" disabled />
+                  <TextField fullWidth label="Designation" value={userDetails.designation} variant="outlined" margin="dense" disabled />
+                  <TextField fullWidth label="Email" value={userDetails.email} variant="outlined" margin="dense" disabled />
+                  <TextField fullWidth label="Phone" value={userDetails.phone} variant="outlined" margin="dense" disabled />
+                  <TextField fullWidth label="Role" value={userDetails.role} variant="outlined" margin="dense" disabled />
+                  <TextField fullWidth label="Can Add Visitors" value={userDetails.canAddVisitors ? "Yes" : "No"} variant="outlined" margin="dense" disabled />
+                  <TextField fullWidth label="Face Embeddings" value={userDetails.hasFaceEmbeddings ? "Available" : "Not Captured"} variant="outlined" margin="dense" disabled />
+                </Grid>
+
+                <Grid item xs={12} md={6}>
+                  <Box display="flex" justifyContent="center">
+                    <img
+                      src={myImage}
+                      alt="attendance illustration"
+                      style={{ width: "100%", maxWidth: "300px", borderRadius: 8 }}
+                    />
+                  </Box>
+                </Grid>
+
+              </Grid>
+
+              {!userDetails.hasFaceEmbeddings && (
+                <Box mt={4} sx={{ textAlign: "center" }}>
+                  <Webcam ref={webcamRef} screenshotFormat="image/jpeg" style={{ width: "100%", borderRadius: 8, boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)" }} />
+                  <Button variant="contained" sx={{ backgroundColor: "#283593", color: "white", mt: 2 }} onClick={captureImage} disabled={capturedImages.length >= 5}>
+                    Capture Image
+                  </Button>
+                  <Button variant="contained" sx={{ backgroundColor: "#283593", color: "white", mt: 2, ml: 2 }} onClick={handleSubmit} disabled={faceEmbeddings.length === 0}>
+                    Submit Face Embeddings
+                  </Button>
+                </Box>
+              )}
+            </Paper>
+          )}
+        </Container>
+      </Grid>
+    </Grid>
   );
 };
 

@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { Box, Paper, TextField, Button, Typography, FormControl, InputLabel, Select, MenuItem, CircularProgress, Alert } from "@mui/material";
-import { SupportAgent } from "@mui/icons-material"; // Importing the icon
+import { SupportAgent } from "@mui/icons-material"; 
 
 export default function Help() {
   const [query, setQuery] = useState("");
   const [email, setEmail] = useState("");
   const [priority, setPriority] = useState("");
-  const [category, setCategory] = useState("");  // New field for category
+  const [category, setCategory] = useState("");  
   const [response, setResponse] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -16,17 +16,15 @@ export default function Help() {
       return;
     }
 
-    setLoading(true); // Show loading spinner while submitting
-    setResponse(""); // Reset previous response
+    setLoading(true); 
+    setResponse(""); 
 
-    // Simulating an API request (you can replace this with actual API calls)
     setTimeout(() => {
-      setLoading(false); // Hide loading spinner
+      setLoading(false); 
       setResponse("Thank you! Our support team will contact you shortly.");
-    }, 2000); // Simulate 2 seconds delay
+    }, 2000);
   };
 
-  // Some nice quotes to display
   const quotes = [
     "The only way to do great work is to love what you do. - Steve Jobs",
     "It always seems impossible until it’s done. - Nelson Mandela",
@@ -47,27 +45,25 @@ export default function Help() {
           borderRadius: 3,
           overflow: "hidden",
           width: "100%",
-          height: "100vh", // Full height of the viewport
+          height: "100vh", 
           display: "flex",
           flexDirection: { xs: "column", md: "row" },
-          padding: 7, // Reduced padding to decrease the gap
+          padding: 7, 
           boxSizing: "border-box",
         }}
       >
-        {/* Left Side - Help Form */}
         <Box
           sx={{
             display: "flex",
             flexDirection: "column",
-            alignItems: "center", // Centering the form fields horizontally
-            justifyContent: "center", // Centering the form fields vertically
+            alignItems: "center", 
+            justifyContent: "center", 
             flex: 1.2,
-            padding: 2, // Reduced padding to decrease the gap
+            padding: 2, 
             backgroundColor: "#ffffff",
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-            {/* IT Support Center Title with Icon */}
             <SupportAgent sx={{ color: "#1e40af", fontSize: 30, mr: 1 }} />
             <Typography variant="h5" color="#1e40af" fontWeight="bold">
               IT Support Center
@@ -163,19 +159,17 @@ export default function Help() {
 
           {response && <Alert severity="info" sx={{ mt: 2 }}>{response}</Alert>}
 
-          {/* Display a Random Quote */}
           <Typography variant="body2" color="textSecondary" align="center" sx={{ mt: 4, fontStyle: "italic", fontSize: "16px" }}>
             "{randomQuote}"
           </Typography>
         </Box>
 
-        {/* Right Side - Help Image */}
         <Box
           sx={{
             flex: 1,
             display: "flex",
-            alignItems: "center", // Centering the image vertically
-            justifyContent: "center", // Centering the image horizontally
+            alignItems: "center", 
+            justifyContent: "center", 
             padding: 2,
             backgroundColor: "#ffffff",
           }}

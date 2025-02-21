@@ -1,4 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+
+import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import {
   Container,
   Typography,
@@ -13,241 +16,234 @@ import {
   TableBody,
   TableRow,
   TableCell,
+  CircularProgress,
+  Paper,
+  Drawer,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Avatar,
 } from "@mui/material";
+import { Dashboard, People, BarChart, History, ExitToApp, Info } from "@mui/icons-material";
 import axios from "axios";
 import { Link } from "react-router-dom";
-import * as faceapi from "face-api.js"; // Import face-api.js
 
 const AdminDashboard = () => {
-  // State variables
-  const [searchQuery, setSearchQuery] = useState({
-    employeeId: "",
-    department: "",
-    designation: "",
-  });
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [capturedImages, setCapturedImages] = useState([]);
-  const [faceEmbeddings, setFaceEmbeddings] = useState([]);
-  const [employeeData, setEmployeeData] = useState({
-    employeeId: "",
-    name: "",
-    department: "",
-    designation: "",
-    email: "",
-    phone: "",
-    password: "",
-    canAddVisitor: false,
-  });
+  const [searchQuery, setSearchQuery] = useState({ employeeId: "", department: "", designation: "" });
+  const [filteredEmployees, setFilteredEmployees] = useState([]);
+  const authToken = localStorage.getItem("token");
 
-  // Webcam reference
-  const webcamRef = useRef(null);
-
-  // Model load state
-  const [isModelLoaded, setIsModelLoaded] = useState(false);
-
-  // Load face-api.js models
   useEffect(() => {
-    const loadModels = async () => {
-      try {
-        await faceapi.nets.tinyFaceDetector.loadFromUri("/models");
-        await faceapi.nets.faceLandmark68Net.loadFromUri("/models");
-        await faceapi.nets.faceRecognitionNet.loadFromUri("/models");
-        setIsModelLoaded(true);
-      } catch (error) {
-        console.error("Error loading face-api models:", error);
-      }
-    };
-    loadModels();
+    fetchEmployees();
   }, []);
 
-  // Handle search input changes
+  const fetchEmployees = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(
+        "https://face-regconition-backend.onrender.com/api/admin/getAllEmployees",
+        { headers: { Authorization: `Bearer ${authToken}` } }
+      );
+      setEmployees(response.data.employees);
+      setFilteredEmployees(response.data.employees);
+    } catch (error) {
+      console.error("Error fetching employees:", error);
+    }
+    setLoading(false);
+  };
+
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    navigate("/login");
+  };
+
   const handleSearchChange = (e) => {
     const { name, value } = e.target;
     setSearchQuery((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Capture Image Function
-  const captureImage = async () => {
-    if (capturedImages.length >= 5) {
-      alert("You can only capture up to 5 images.");
-      return;
-    }
-
-    const imageSrc = webcamRef.current?.getScreenshot();
-    if (!imageSrc) {
-      alert("No image captured.");
-      return;
-    }
-
-    setCapturedImages((prevImages) => [...prevImages, imageSrc]);
-
-    try {
-      if (!isModelLoaded) {
-        alert("Please wait for models to load.");
-        return;
-      }
-
-      const blob = await (await fetch(imageSrc)).blob();
-      const img = await faceapi.bufferToImage(blob);
-      const detections = await faceapi.detectSingleFace(img)
-        .withFaceLandmarks()
-        .withFaceDescriptor();
-
-      if (detections) {
-        setFaceEmbeddings((prevEmbeddings) => [
-          ...prevEmbeddings,
-          detections.descriptor,
-        ]);
-      } else {
-        alert("No face detected in the image.");
-      }
-    } catch (error) {
-      console.error("Error processing image:", error);
-      alert("Error processing the image.");
-    }
-  };
-
-  // Handle Form Submission
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (capturedImages.length === 0) {
-      alert("Please capture at least one image.");
-      return;
-    }
-    if (faceEmbeddings.length === 0) {
-      alert("Please capture face embeddings.");
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append("employeeId", employeeData.employeeId);
-    formData.append("name", employeeData.name);
-    formData.append("department", employeeData.department);
-    formData.append("designation", employeeData.designation);
-    formData.append("email", employeeData.email);
-    formData.append("phone", employeeData.phone);
-    formData.append("password", employeeData.password);
-    formData.append("canAddVisitor", employeeData.canAddVisitor);
-
-    const token = localStorage.getItem("token");
-    if (!token) {
-      alert("Authentication token missing. Please log in.");
-      return;
-    }
-
-    try {
-      for (let i = 0; i < capturedImages.length; i++) {
-        const response = await fetch(capturedImages[i]);
-        const blob = await response.blob();
-        formData.append("images", blob, 'image${i + 1}.jpg');
-      }
-
-      formData.append("faceEmbeddings", JSON.stringify(faceEmbeddings));
-
-      await axios.post(
-        "https://face-regconition-backend.onrender.com/api/admin/registerEmployee",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Authorization: 'Bearer ${token}',
-          },
-        }
-      );
-
-      alert("Employee registered successfully!");
-      setCapturedImages([]);
-      setFaceEmbeddings([]);
-    } catch (error) {
-      console.error("Upload error:", error);
-      alert(error.response?.data?.error || "Error uploading images");
-    }
-  };
-
-  // Handle Employee Search
-  const handleSearch = async () => {
+  const handleSearch = () => {
     setLoading(true);
-    try {
-      const response = await axios.get("https://face-regconition-backend.onrender.com/api/admin/employees", {
-        params: searchQuery,
-      });
-      setEmployees(response.data);
-    } catch (error) {
-      console.error("Search error:", error);
-    }
+    const filtered = employees.filter((employee) =>
+      Object.keys(searchQuery).every(
+        (key) => searchQuery[key] === "" || employee[key]?.toLowerCase().includes(searchQuery[key].toLowerCase())
+      )
+    );
+    setFilteredEmployees(filtered);
     setLoading(false);
   };
 
-  // Render Employee Table
-  const renderEmployeeTable = () => {
-    return (
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>Employee ID</TableCell>
-            <TableCell>Name</TableCell>
-            <TableCell>Department</TableCell>
-            <TableCell>Designation</TableCell>
-            <TableCell>Email</TableCell>
-            <TableCell>Phone</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {employees.map((employee) => (
-            <TableRow key={employee.employeeId}>
-              <TableCell>{employee.employeeId}</TableCell>
-              <TableCell>{employee.name}</TableCell>
-              <TableCell>{employee.department}</TableCell>
-              <TableCell>{employee.designation}</TableCell>
-              <TableCell>{employee.email}</TableCell>
-              <TableCell>{employee.phone}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    );
-  };
-
   return (
-    <Container maxWidth="lg" style={{ marginTop: "20px" }}>
-      <Typography variant="h4" align="center" gutterBottom>
-        Admin Dashboard
-      </Typography>
+    <Box sx={{ display: "flex", backgroundColor: "white", minHeight: "100vh" }}>
+      {/* Sidebar */}
+      <Drawer
+        variant="permanent"
+        sx={{
+          width: 240,
+          flexShrink: 0,
+          "& .MuiDrawer-paper": {
+            width: 240,
+            boxSizing: "border-box",
+            backgroundColor: "#283593",
+            color: "white",
+            paddingTop: "20px",
+          },
+        }}
+      >
+        <Box sx={{ textAlign: "center", marginBottom: 3 }}>
+          <Avatar sx={{ width: 60, height: 60, mx: "auto", mb: 1, backgroundColor: "lightgrey" }} />
+          <Typography variant="h6" sx={{ color: "#fff", fontWeight: "bold" }}>Admin</Typography>
+        </Box>
+        <List>
+          <ListItem button component={Link} to="/details" sx={{ color: "#fff", "&:hover": { backgroundColor: "#303f9f" } }}>
+            <ListItemIcon sx={{ color: "#fff" }}><Dashboard /></ListItemIcon>
+            <ListItemText primary="Profile" />
+          </ListItem>
+          <ListItem button component={Link} to="/emp" sx={{ color: "#fff", "&:hover": { backgroundColor: "#303f9f" } }}>
+            <ListItemIcon sx={{ color: "#fff" }}><People /></ListItemIcon>
+            <ListItemText primary="Employee Records" />
+          </ListItem>
+          <ListItem button component={Link} to="/logs" sx={{ color: "#fff", "&:hover": { backgroundColor: "#303f9f" } }}>
+            <ListItemIcon sx={{ color: "#fff" }}><History /></ListItemIcon>
+            <ListItemText primary="View Logs" />
+          </ListItem>
+          <ListItem button onClick={handleLogout}>
+          <ListItemIcon>
+            <ExitToAppIcon style={{ color: 'white' }} />
+          </ListItemIcon>
+          <ListItemText primary="Logout" sx={{ color: 'white' }} />
+        </ListItem>
+        </List>
+      </Drawer>
 
-      <Box mb={2} display="flex" justifyContent="flex-end">
-        <Link to="/register-employee">
-          <Button variant="contained" color="primary">Add Employee</Button>
-        </Link>
-      </Box>
+      {/* Main Content */}
+      <Container maxWidth="lg" sx={{ mt: 5, flexGrow: 1 }}>
+  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <Info sx={{ fontSize: 32, color: "#283593", marginRight: 2 }} />
+    <Typography variant="h4" sx={{ fontWeight: "bold", color: "#283593", lineHeight: 1 }}>
+      Employee Details
+    </Typography>
+  </Box>
 
-      <Card elevation={3} style={{ marginBottom: "20px" }}>
-        <CardContent>
-          <Typography variant="h6">Search Employees</Typography>
-          <Grid container spacing={3} style={{ marginTop: "20px" }}>
-            <Grid item xs={12} sm={4}>
-              <TextField fullWidth label="Employee ID" name="employeeId" onChange={handleSearchChange} />
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <TextField fullWidth label="Department" name="department" onChange={handleSearchChange} />
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <TextField fullWidth label="Designation" name="designation" onChange={handleSearchChange} />
-            </Grid>
-          </Grid>
-          <Box mt={2} display="flex" justifyContent="flex-end">
-            <Button variant="contained" color="primary" onClick={handleSearch}>
-              {loading ? "Searching..." : "Search"}
-            </Button>
-          </Box>
-        </CardContent>
-      </Card>
+  <Typography variant="body1" sx={{ textAlign: "center", fontStyle: "italic", color: "#5f6368", mt: 2 }}>
+    "Our employees are our greatest asset, driving success every day."
+  </Typography>
+  
+  <br></br><br></br>
 
-      <Card elevation={3}>
-        <CardContent>{renderEmployeeTable()}</CardContent>
-      </Card>
-    </Container>
+
+         
+        
+
+        {/* Search Form */}
+        <Card sx={{ mb: 4, boxShadow: 3 }}>
+          <CardContent>
+            <Typography variant="h6" sx={{ fontWeight: "bold", color: "#283593" }}>Search Employees</Typography>
+            <Grid container spacing={2} sx={{ mt: 2 }}>
+              <Grid item xs={12} sm={4}>
+                <TextField
+                  fullWidth
+                  label="Employee ID"
+                  name="employeeId"
+                  value={searchQuery.employeeId}
+                  onChange={handleSearchChange}
+                  variant="outlined"
+                  size="small"
+                  sx={{ backgroundColor: "#f4f6f8", borderRadius: "4px" }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <TextField
+                  fullWidth
+                  label="Department"
+                  name="department"
+                  value={searchQuery.department}
+                  onChange={handleSearchChange}
+                  variant="outlined"
+                  size="small"
+                  sx={{ backgroundColor: "#f4f6f8", borderRadius: "4px" }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <TextField
+                  fullWidth
+                  label="Designation"
+                  name="designation"
+                  value={searchQuery.designation}
+                  onChange={handleSearchChange}
+                  variant="outlined"
+                  size="small"
+                  sx={{ backgroundColor: "#f4f6f8", borderRadius: "4px" }}
+                />
+              </Grid>
+            </Grid>
+            <Box mt={2} display="flex" justifyContent="flex-end">
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleSearch}
+                disabled={loading}
+                sx={{
+                  backgroundColor: "#283593",
+                  "&:hover": { backgroundColor: "#1a237e" },
+                }}
+              >
+                {loading ? <CircularProgress size={24} color="secondary" /> : "Search"}
+              </Button>
+            </Box>
+          </CardContent>
+        </Card>
+
+        {/* Employee List */}
+        <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
+          <Card>
+            <CardContent>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell><strong>Employee ID</strong></TableCell>
+                    <TableCell><strong>Name</strong></TableCell>
+                    <TableCell><strong>Department</strong></TableCell>
+                    <TableCell><strong>Designation</strong></TableCell>
+                    <TableCell><strong>Email</strong></TableCell>
+                    <TableCell><strong>Phone</strong></TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {loading ? (
+                    <TableRow>
+                      <TableCell colSpan={6} align="center">
+                        <CircularProgress />
+                      </TableCell>
+                    </TableRow>
+                  ) : filteredEmployees.length > 0 ? (
+                    filteredEmployees.map((employee) => (
+                      <TableRow key={employee.employeeId}>
+                        <TableCell>{employee.employeeId}</TableCell>
+                        <TableCell>{employee.name}</TableCell>
+                        <TableCell>{employee.department}</TableCell>
+                        <TableCell>{employee.designation}</TableCell>
+                        <TableCell>{employee.email}</TableCell>
+                        <TableCell>{employee.phone}</TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={6} align="center">No employees found</TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </Paper>
+      </Container>
+    </Box>
   );
 };
 

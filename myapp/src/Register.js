@@ -11,9 +11,9 @@ import {
   Alert,
   Link,
 } from "@mui/material";
-import PersonAddIcon from "@mui/icons-material/PersonAdd"; // Register icon
-import { Carousel } from "react-responsive-carousel"; // Import Carousel
-import "react-responsive-carousel/lib/styles/carousel.min.css"; // Import Carousel CSS
+import PersonAddIcon from "@mui/icons-material/PersonAdd"; 
+import { Carousel } from "react-responsive-carousel"; 
+import "react-responsive-carousel/lib/styles/carousel.min.css"; 
 
 const Register = () => {
   const [fullName, setFullName] = useState("");
@@ -22,7 +22,7 @@ const Register = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [quote, setQuote] = useState(""); // State to store the quote
+  const [quote, setQuote] = useState(""); 
   const navigate = useNavigate();
 
   const handleRegister = async (e) => {
@@ -31,7 +31,7 @@ const Register = () => {
     setLoading(true);
 
     try {
-      const response = await fetch("https://face-regconition-backend.onrender.com/api/employee/register", {
+      const response = await fetch("https://face-regconition-backend.onrender.com/api/admin/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ fullName, username, email, password }),
@@ -49,7 +49,6 @@ const Register = () => {
     }
   };
 
-  // Inspirational Quotes for the register page
   const quotes = [
     "The best way to predict your future is to create it. - Abraham Lincoln",
     "Don't watch the clock; do what it does. Keep going. - Sam Levenson",
@@ -58,11 +57,10 @@ const Register = () => {
     "Believe in yourself, push your limits, and do whatever it takes to conquer your goals.",
   ];
 
-  // Set a random quote when the page is first loaded
   useEffect(() => {
     const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
     setQuote(randomQuote);
-  }, []); // Empty dependency array ensures it only runs on mount
+  }, []);
 
   return (
     <Box sx={{ minHeight: "100vh", display: "flex", justifyContent: "center", alignItems: "center", backgroundColor: "#f3f4f6" }}>
@@ -79,7 +77,6 @@ const Register = () => {
           boxSizing: "border-box",
         }}
       >
-        {/* Left Side - Registration Form */}
         <Box
           sx={{
             display: "flex",
@@ -96,7 +93,6 @@ const Register = () => {
             Register
           </Typography>
 
-          {/* Registration Prompt */}
           <Typography variant="body2" color="textSecondary" align="center" sx={{ mb: 2, fontStyle: "italic", fontSize: "14px" }}>
             "Start your journey with us. Register to get started!"
           </Typography>
@@ -168,7 +164,6 @@ const Register = () => {
             </Button>
           </form>
 
-          {/* Already have an account? Link */}
           <Box sx={{ display: "flex", justifyContent: "center", width: "100%", mt: 2 }}>
             <Link
               href="/login"
@@ -185,13 +180,12 @@ const Register = () => {
             </Link>
           </Box>
 
-          {/* Inspirational Quote */}
+
           <Typography variant="body2" color="textSecondary" align="center" sx={{ mt: 4, fontStyle: "italic", fontSize: "16px" }}>
             "{quote}"
           </Typography>
         </Box>
 
-        {/* Right Side - Image Slideshow */}
         <Box
           sx={{
             flex: 1,

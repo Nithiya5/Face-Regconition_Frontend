@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Container, Typography, Button, Grid, Box } from "@mui/material";
+import { Container, Typography, Button, Grid, Box, Paper, Card, CardContent } from "@mui/material";
 import Webcam from "react-webcam";
 import * as faceapi from "face-api.js";
 import axios from "axios";
+import Sidebar from "./Sidebar";
+import myImage from "./image/Attendance.png";
 
 const Attendance = () => {
   const webcamRef = useRef(null);
@@ -16,12 +18,10 @@ const Attendance = () => {
   const [deviceId, setDeviceId] = useState(null);
   const [location, setLocation] = useState(null);
 
-  // ✅ Get Device ID
   useEffect(() => {
-    setDeviceId(navigator.userAgent); // Using user agent as a simple identifier
+    setDeviceId(navigator.userAgent); 
   }, []);
 
-  // ✅ Get Location
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -38,7 +38,6 @@ const Attendance = () => {
     }
   }, []);
 
-  // ✅ Load FaceAPI Models
   useEffect(() => {
     const loadModels = async () => {
       try {
@@ -54,7 +53,7 @@ const Attendance = () => {
     loadModels();
   }, []);
 
-  // ✅ Capture Face & Check for Smile
+
   const captureFace = async () => {
     if (!isModelLoaded) {
       alert("Face detection models not loaded.");
@@ -77,7 +76,6 @@ const Attendance = () => {
     setFaceEmbedding(detection.descriptor);
     console.log("😊 Please SMILE to pass liveness check!");
 
-    // ✅ Wait for Smile
     setTimeout(async () => {
       const imageSrc2 = webcamRef.current.getScreenshot();
       const img2 = await faceapi.bufferToImage(await fetch(imageSrc2).then((res) => res.blob()));
@@ -92,11 +90,11 @@ const Attendance = () => {
       const mouth = landmarks.getMouth();
       const upperLipY = mouth[3].y;
       const lowerLipY = mouth[9].y;
-      const smileScore = lowerLipY - upperLipY; // Measures mouth openness
+      const smileScore = lowerLipY - upperLipY; 
 
-      if (smileScore > 10) { // Adjust threshold if needed
+      if (smileScore > 10) { 
         setIsLive(true);
-        setLivenessConfidence((smileScore / 20).toFixed(2)); // Normalize confidence
+        setLivenessConfidence((smileScore / 20).toFixed(2)); 
         console.log("✅ Smile detected! Liveness check passed.");
         alert("✅ Smile detected! Ready to mark attendance.");
       } else {
@@ -105,19 +103,18 @@ const Attendance = () => {
         console.log("❌ No smile detected. Try again!");
         alert("❌ No smile detected. Please smile to pass the check.");
       }
-    }, 2000); // Wait 2 sec for the user to smile
+    }, 2000); 
   };
 
-  // ✅ Detect if the user is on a phone
+  
   useEffect(() => {
     const isMobile = /Mobi|Android/i.test(navigator.userAgent);
     setPhoneDetected(isMobile);
   }, []);
 
-  // ✅ Check for Spoof Attempt
   const detectSpoofing = async () => {
     const imageSrc1 = webcamRef.current.getScreenshot();
-    await new Promise((resolve) => setTimeout(resolve, 1500)); // Wait 1.5 sec
+    await new Promise((resolve) => setTimeout(resolve, 1500)); 
     const imageSrc2 = webcamRef.current.getScreenshot();
 
     if (imageSrc1 === imageSrc2) {
@@ -128,14 +125,18 @@ const Attendance = () => {
     }
   };
 
-  // ✅ Mark Attendance
   const markAttendance = async () => {
     if (!faceEmbedding || !isLive) {
       alert("Liveness check failed! Try again.");
       return;
     }
 
-    await detectSpoofing(); // Check for spoof attempts
+    await detectSpoofing(); 
+
+    if (!isLive || livenessConfidence < 0.7 || phoneDetected || spoofAttempt) {
+      alert("⚠️ Liveness check failed. Possible spoof attempt detected!");
+      return;
+    }
 
     try {
       const authToken = localStorage.getItem("token");
@@ -150,8 +151,6 @@ const Attendance = () => {
         location,
       };
 
-      console.log("📤 Sending attendance data...", requestData);
-
       const response = await axios.post(
         "https://face-regconition-backend.onrender.com/api/employee/mark-attendance",
         requestData,
@@ -159,7 +158,6 @@ const Attendance = () => {
       );
 
       setAttendanceStatus(response.data.msg);
-      console.log("✅ Attendance marked successfully:", response.data.msg);
       alert(response.data.msg);
     } catch (error) {
       console.error("❌ Error marking attendance:", error);
@@ -168,25 +166,72 @@ const Attendance = () => {
   };
 
   return (
-    <Container maxWidth="md">
-      <Typography variant="h4" align="center">Mark Attendance</Typography>
-      <Grid container spacing={3} justifyContent="center">
-        <Grid item xs={12} md={6}>
-          <Webcam ref={webcamRef} screenshotFormat="image/jpeg" style={{ width: "100%", borderRadius: 10 }} />
-          <Box mt={2}>
-            <Button variant="contained" color="primary" onClick={captureFace} fullWidth>
-              Capture Face
-            </Button>
-          </Box>
-          <Box mt={2}>
-            <Button variant="contained" color="secondary" onClick={markAttendance} fullWidth disabled={!isLive}>
-              Mark Attendance
-            </Button>
-          </Box>
-          {attendanceStatus && <Typography variant="h6" color="primary" align="center">{attendanceStatus}</Typography>}
-        </Grid>
-      </Grid>
-    </Container>
+    <Box display="flex" sx={{ height: "100vh", backgroundColor: "#f4f4f9" ,paddingLeft:"130px"}}>
+      <Sidebar />
+      <Box flex={1} p={3} sx={{ backgroundColor: "#fff", boxShadow: 0, borderRadius: 2 }}>
+        <Container maxWidth="md">
+          <Typography variant="h4" align="center" sx={{ mb: 1, fontWeight: 'bold', color: '#1976d2' ,fontStyle:'italic',paddingTop:'10px'}}>Smile & Confirm Your Spot! 😊</Typography>
+          
+          <Grid container spacing={3} justifyContent="center" alignItems="center">
+            {/* Left side: Webcam */}
+            <Grid item xs={12} md={6} container direction="column" alignItems="center">
+              <Paper sx={{ padding: 3, borderRadius: 2, boxShadow: 0 }}>
+                <Webcam ref={webcamRef} screenshotFormat="image/jpeg" style={{ width: "100%", borderRadius: 10 }} />
+                <Box mt={2}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={captureFace}
+                    fullWidth
+                    sx={{
+                      backgroundColor: "#1976d2",
+                      "&:hover": {
+                        backgroundColor: "#1565c0"
+                      },
+                    }}
+                  >
+                    Capture Face & Smile
+                  </Button>
+                </Box>
+                <Box mt={2}>
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    onClick={markAttendance}
+                    fullWidth
+                    disabled={!isLive}
+                    sx={{
+                      backgroundColor: "#d32f2f",
+                      "&:hover": {
+                        backgroundColor: "#c62828"
+                      },
+                    }}
+                  >
+                    Mark Attendance
+                  </Button>
+                </Box>
+              </Paper>
+
+              {attendanceStatus && (
+                <Typography variant="h6" color="primary" align="center" sx={{ mt: 3 }}>
+                  {attendanceStatus}
+                </Typography>
+              )}
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <Box display="flex" justifyContent="center">
+                <img
+                  src={myImage} 
+                  alt="attendance illustration"
+                  style={{ width: "80%", borderRadius: 8 }}
+                />
+              </Box>
+            </Grid>
+          </Grid>
+        </Container>
+      </Box>
+    </Box>
   );
 };
 

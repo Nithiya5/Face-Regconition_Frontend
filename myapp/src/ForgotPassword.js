@@ -1,127 +1,152 @@
-import React, { useState } from 'react';
-import { TextField, Button, Typography, Box } from '@mui/material';
-import axios from 'axios';
+import React, { useState } from "react";
+import { Box, Paper, TextField, Button, Typography, CircularProgress, Alert } from "@mui/material";
+import { LockOutlined, Email, ArrowBack } from "@mui/icons-material"; 
+import { useNavigate } from "react-router-dom"; 
+export default function ForgotPassword() {
+  const [email, setEmail] = useState("");
+  const [response, setResponse] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate(); 
 
-const ForgotPassword = () => {
-  const [email, setEmail] = useState('');
-  const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    // Basic email validation
+  const handleSubmit = async () => {
     if (!email) {
-      setError('Email is required');
+      setResponse("Please enter your email address.");
       return;
     }
 
-    const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    if (!emailPattern.test(email)) {
-      setError('Please enter a valid email address');
-      return;
-    }
+    setLoading(true);
+    setResponse(""); 
 
-    try {
-      setError(''); // Clear any previous errors
-      // Send a POST request to the backend
-      const response = await axios.post('https://face-regconition-backend.onrender.com/api/employee/forgotPassword', {
-        email: email,
-      });
+    setTimeout(() => {
+      setLoading(false); 
+      setResponse("A reset link has been sent to your email.");
+    }, 2000); 
+  };
 
-      // Handle the response (Success message)
-      setMessage(response.data.message); // Display success message
-    } catch (err) {
-      // Handle error
-      if (err.response) {
-        setError(err.response.data.error); // Display the error message from backend
-      } else {
-        setError('An error occurred. Please try again later.');
-      }
-    }
+  const handleBack = () => {
+    navigate(-1); 
   };
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '100vh',
-        backgroundColor: '#f7f9fc',
-        padding: 3,
-      }}
-    >
-      <Box
+    <Box sx={{ minHeight: "100vh", display: "flex", justifyContent: "center", alignItems: "center", backgroundColor: "#f3f4f6", position: "fixed", top: 0, left: 0, right: 0 }}>
+      <Paper
+        elevation={4}
         sx={{
-          backgroundColor: '#ffffff',
-          borderRadius: '8px',
-          boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
-          padding: 4,
-          width: '100%',
-          maxWidth: '400px',
+          borderRadius: 3,
+          overflow: "hidden",
+          width: "100%",
+          height: "100vh", 
+          display: "flex",
+          flexDirection: { xs: "column", md: "row" },
+          padding: 7,
+          boxSizing: "border-box",
         }}
       >
-        <Typography variant="h4" sx={{ marginBottom: 2, fontWeight: 'bold', color: 'black' }}>
-          Forgot Password
-        </Typography>
-        <form onSubmit={handleSubmit}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            flex: 1.2,
+            padding: 2,
+            backgroundColor: "#ffffff",
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+            <LockOutlined sx={{ color: "#1e40af", fontSize: 30, mr: 1 }} />
+            <Typography variant="h5" color="#1e40af" fontWeight="bold">
+              Forgot Password
+            </Typography>
+          </Box>
+
+          <Typography variant="body1" color="textSecondary" align="center" paragraph sx={{ mb: 2 }}>
+            Enter your email address, and we'll send you a link to reset your password.
+          </Typography>
+
           <TextField
-            label="Email Address"
-            variant="outlined"
-            fullWidth
+            label="Your Email Address"
+            type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            margin="normal"
-            required
+            fullWidth
+            variant="outlined"
             sx={{
-              '& .MuiInputLabel-root': {
-                color: '#555',
-              },
-              '& .MuiOutlinedInput-root': {
-                '& fieldset': {
-                  borderColor: '#ddd',
-                },
-                '&:hover fieldset': {
-                  borderColor: '#6200ea',
-                },
-                '&.Mui-focused fieldset': {
-                  borderColor: '#6200ea',
-                },
-              },
+              mb: 2,
+              backgroundColor: "#e0e7ff",
+              "& .MuiOutlinedInput-root": { borderRadius: 2 },
+              "&:hover fieldset": { borderColor: "#1e40af" },
+            }}
+            InputProps={{
+              startAdornment: (
+                <Email sx={{ color: "#1e40af", marginLeft: 1 }} />
+              ),
             }}
           />
-          {error && (
-            <Typography variant="body2" color="error" sx={{ marginBottom: 2 }}>
-              {error}
-            </Typography>
-          )}
-          {message && (
-            <Typography variant="body2" color="success" sx={{ marginBottom: 2 }}>
-              {message}
-            </Typography>
-          )}
+
           <Button
-            type="submit"
             variant="contained"
             color="primary"
             fullWidth
+            onClick={handleSubmit}
             sx={{
-              marginTop: 2,
-              padding: '10px 0',
-              backgroundColor: '#6200ea',
-              '&:hover': {
-                backgroundColor: '#3700b3',
-              },
+              py: 1.5,
+              fontWeight: "bold",
+              fontSize: 15,
+              mt: 2,
+              borderRadius: 3,
+              ":hover": { backgroundColor: "#3b82f6" },
             }}
+            startIcon={<LockOutlined />}
           >
-            Send Reset Link
+            {loading ? <CircularProgress size={24} color="inherit" /> : "Send Reset Link"}
           </Button>
-        </form>
-      </Box>
+
+          {response && <Alert severity="info" sx={{ mt: 2 }}>{response}</Alert>}
+
+          <Box sx={{ mt: 4, textAlign: "center", padding: 1, color: "#5c6b8c", fontStyle: "italic" }}>
+            <Typography variant="body2">
+              "Don't forget to update your password regularly to keep your account secure."
+            </Typography>
+            <Typography variant="body2" sx={{ mt: 1 }}>
+              "Passwords should be unique and complex to avoid security breaches."
+            </Typography>
+          </Box>
+
+          <Button
+            variant="text"
+            color="blue"
+            onClick={handleBack}
+            startIcon={<ArrowBack />}
+            sx={{ mt: 3 }}
+          >
+            Back
+          </Button>
+        </Box>
+
+        <Box
+          sx={{
+            flex: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 2,
+            backgroundColor: "#ffffff",
+          }}
+        >
+          <Box
+            component="img"
+            src="https://img.freepik.com/premium-vector/forgot-password-illustration_65141-418.jpg"
+            alt="Forgot Password Illustration"
+            sx={{
+              width: "120%",
+              maxWidth: "1000px",
+              height: "auto",
+              borderRadius: 1,
+            }}
+          />
+        </Box>
+      </Paper>
     </Box>
   );
-};
-
-export default ForgotPassword;
+}

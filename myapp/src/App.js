@@ -1,6 +1,6 @@
 import React from "react";
-import { Routes, Route, Link } from "react-router-dom";
-import aboutImage from "../src/image/About.png";
+import { Routes, Route, Link,useLocation } from "react-router-dom";
+import { FaRegPlayCircle, FaInfoCircle } from "react-icons/fa";
 import Login from "./Login";
 import Register from "./Register";
 import AdminDashboard from "./AdminDashboard";
@@ -11,12 +11,26 @@ import ResetPassword from "./ResetPassword";
 import Help from "./Help";
 import Aboutus from "./Aboutus";
 import Attendance from "./Attendance";
+import Emplogs from "./Emplogs";
+
+import Logs from "./Logs";
+import EmployeeRecord from "./EmployeeRecord";
+import Admindetails from "./Admindetails";
+
+import {ToastContainer } from "react-toastify"; 
+import "react-toastify/dist/ReactToastify.css"; 
 import "./App.css";
 
 import "./App.css"; 
 
 
 const Header = () => {
+  const location = useLocation();
+  const hideHeaderRoutes = ["/employee-dashboard", "/attendance", "/emp-logs","admin-logs","/emp","/details","/register-employee"];
+
+  if (hideHeaderRoutes.includes(location.pathname)) {
+    return null; 
+  }
   return (
     <header className="header">
       <div className="logo">Presence Pro</div>
@@ -24,7 +38,6 @@ const Header = () => {
         <Link to="/" className="nav-link">Home</Link>
         <Link to="/login" className="nav-link">Login</Link>
         <Link to="/register" className="nav-link">Register</Link>
-        <Link to="/about" className="nav-link">About Us</Link>
         <Link to="/help" className="nav-link">Help</Link>
       </nav>
     </header>
@@ -40,46 +53,35 @@ const Home = () => (
         <p className="paragraph">
           Providing <b>secure, fast, and accurate</b> recognition solutions for businesses and individuals worldwide.
         </p>
+        <div className="button-container">
+          <Link to="/register">
+            <button className="button">
+              <FaRegPlayCircle size={20} />
+              Get Started
+            </button>
+          </Link>
+          <Link to="/aboutus">
+            <button className="button">
+              <FaInfoCircle size={20} />
+              Learn More
+            </button>
+          </Link>
+        </div>
       </div>
     </div>
   </div>
-);
-
-const About = () => (
-  <main className="about-container">
-    <div><img src={aboutImage} alt="About Us" className="about-image" /></div>
-    <div className="content">
-      <h2 className="about-title">About Us</h2>
-      <p className="about-description">
-        FaceRecognition is an advanced AI-powered platform designed to provide <strong>secure, fast, and reliable</strong> facial recognition solutions. 
-        Our technology helps businesses, security agencies, and individuals enhance safety, efficiency, and user experience.
-      </p>
-    </div>
-    
-    <div className="about-section">
-      <h3 className="about-subtitle">Our Mission</h3>
-      <p className="about-text">
-        We aim to revolutionize security and identity verification through <strong>cutting-edge AI and deep learning</strong>.
-      </p>
-      
-      <h3 className="about-subtitle">Why Choose Us?</h3>
-      <ul className="about-list">
-        <li>AI-driven accuracy</li>
-        <li>Secure & privacy-focused</li>
-        <li>Easy integration & fast processing</li>
-      </ul>
-    </div>
-  </main>
 );
 
 const App = () => {
   return (
     <div className="body">
       <Header />
+      <ToastContainer />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/aboutus" element={<Aboutus />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="/register-employee" element={<RegisterEmployee />} />
         <Route path="/employee-dashboard" element={<EmployeeDashboard />} />
@@ -88,10 +90,13 @@ const App = () => {
         <Route path = "/help" element ={<Help/>}/>;
         <Route path = "/about" element ={<Aboutus/>}/>;
         <Route path = "/attendance" element ={<Attendance/>}/>;
+        <Route path ="/emp-logs" element ={<Emplogs/>}/>;
+        <Route path="/details" element={<Admindetails />} />
+        <Route path="/emp" element={<EmployeeRecord/>} />
+        <Route path="/admin-logs" element={<Logs/>} />
       </Routes>
     </div>
   );
 };
 
 export default App;
-

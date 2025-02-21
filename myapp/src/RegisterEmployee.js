@@ -3,7 +3,9 @@ import {
   TextField, Button, Container, Typography, Grid, FormControlLabel, Checkbox, 
   Card, CardContent, Box, Avatar, InputAdornment, Snackbar, Alert, CircularProgress 
 } from "@mui/material";
-import { Person, Work, Email, Phone, Lock, AccountBox, AddCircle } from "@mui/icons-material";
+
+import { Person, Work, Email, Phone, Lock, AccountBox, AddCircle, ArrowBack } from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const RegisterEmployee = () => {
@@ -23,6 +25,8 @@ const RegisterEmployee = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [notification, setNotification] = useState({ open: false, message: "", type: "success" });
 
+  const navigate = useNavigate();
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setEmployeeData({ ...employeeData, [name]: type === "checkbox" ? checked : value });
@@ -30,7 +34,11 @@ const RegisterEmployee = () => {
 
   const handleProfileImageChange = (e) => {
     const file = e.target.files[0];
-    if (!file || file.size > 5 * 1024 * 1024 || !["image/jpeg", "image/png"].includes(file.type)) {
+    if (
+      !file ||
+      file.size > 5 * 1024 * 1024 ||
+      !["image/jpeg", "image/png"].includes(file.type)
+    ) {
       setNotification({ open: true, message: "Invalid file. Ensure it is JPEG/PNG and under 5MB.", type: "error" });
       return;
     }
@@ -60,12 +68,16 @@ const RegisterEmployee = () => {
         return;
       }
 
-      await axios.post("https://face-regconition-backend.onrender.com/api/admin/registerEmployee", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: 'Bearer ${authToken}',
-        },
-      });
+      await axios.post(
+        "https://face-regconition-backend.onrender.com/api/admin/registerEmployee",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${authToken}`,
+          },
+        }
+      );
 
       setNotification({ open: true, message: "Employee registered successfully!", type: "success" });
       setEmployeeData({
@@ -88,18 +100,22 @@ const RegisterEmployee = () => {
     setIsSubmitting(false);
   };
 
+  const handleBack = () => {
+    navigate(-1);
+  };
+
   return (
     <>
       <style>
-        {
-          `body, html {
+        {`
+          body, html {
             margin: 0;
             padding: 0;
             height: 100%;
             overflow: hidden;
             background-color: #fff;
-          }`
-        }
+          }
+        `}
       </style>
 
       <Container 
@@ -115,12 +131,20 @@ const RegisterEmployee = () => {
           justifyContent: 'center',
         }}
       >
-        {/* Fields Container */}
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={8}>
+        <Typography variant="h5" sx={{ mb: 0, color: "#007bff", fontWeight: "bold", textAlign: "center" }}>
+          Employee Registration
+        </Typography>
+        <Typography variant="h6" sx={{ mb: 2, color: "black", textAlign: "center" }}>
+          "Welcome to the team! Please provide the necessary details to register the new employee."
+        </Typography>
+
+        <Grid container spacing={3} sx={{ padding: 3 }}>
+          <Grid item xs={12} md={8} sx={{ paddingRight: 3 }}>
             <Card elevation={6} sx={{ borderRadius: 3, backgroundColor: "#fff", padding: 3 }}>
               <CardContent>
-                <Typography variant="h6" sx={{ marginBottom: 2, color: '#007bff' }}>Employee Details</Typography>
+                <Typography variant="h5" sx={{ marginBottom: 2, color: '#007bff' }}>
+                  Employee Details
+                </Typography>
 
                 <Grid container spacing={3}>
                   <Grid item xs={12} sm={6}>
@@ -132,7 +156,11 @@ const RegisterEmployee = () => {
                       onChange={handleChange}
                       sx={{ mb: 2 }}
                       InputProps={{
-                        startAdornment: <InputAdornment position="start"><AccountBox /></InputAdornment>,
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <AccountBox />
+                          </InputAdornment>
+                        ),
                       }}
                     />
                   </Grid>
@@ -146,7 +174,11 @@ const RegisterEmployee = () => {
                       required
                       sx={{ mb: 2 }}
                       InputProps={{
-                        startAdornment: <InputAdornment position="start"><Person /></InputAdornment>,
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <Person />
+                          </InputAdornment>
+                        ),
                       }}
                     />
                   </Grid>
@@ -162,11 +194,14 @@ const RegisterEmployee = () => {
                       onChange={handleChange}
                       sx={{ mb: 2 }}
                       InputProps={{
-                        startAdornment: <InputAdornment position="start"><Work /></InputAdornment>,
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <Work />
+                          </InputAdornment>
+                        ),
                       }}
                     />
                   </Grid>
-
                   <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
@@ -176,7 +211,11 @@ const RegisterEmployee = () => {
                       onChange={handleChange}
                       sx={{ mb: 2 }}
                       InputProps={{
-                        startAdornment: <InputAdornment position="start"><Work /></InputAdornment>,
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <Work />
+                          </InputAdornment>
+                        ),
                       }}
                     />
                   </Grid>
@@ -193,11 +232,14 @@ const RegisterEmployee = () => {
                       required
                       sx={{ mb: 2 }}
                       InputProps={{
-                        startAdornment: <InputAdornment position="start"><Email /></InputAdornment>,
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <Email />
+                          </InputAdornment>
+                        ),
                       }}
                     />
                   </Grid>
-
                   <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
@@ -207,7 +249,11 @@ const RegisterEmployee = () => {
                       onChange={handleChange}
                       sx={{ mb: 2 }}
                       InputProps={{
-                        startAdornment: <InputAdornment position="start"><Phone /></InputAdornment>,
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <Phone />
+                          </InputAdornment>
+                        ),
                       }}
                     />
                   </Grid>
@@ -225,53 +271,97 @@ const RegisterEmployee = () => {
                       required
                       sx={{ mb: 2 }}
                       InputProps={{
-                        startAdornment: <InputAdornment position="start"><Lock /></InputAdornment>,
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <Lock />
+                          </InputAdornment>
+                        ),
                       }}
                     />
                   </Grid>
                 </Grid>
 
                 <FormControlLabel
-                  control={<Checkbox checked={employeeData.canAddVisitor} onChange={handleChange} name="canAddVisitor" />}
+                  control={
+                    <Checkbox
+                      checked={employeeData.canAddVisitor}
+                      onChange={handleChange}
+                      name="canAddVisitor"
+                    />
+                  }
                   label="Can Add Visitors"
                 />
 
-                <Button 
-                  fullWidth 
-                  variant="contained" 
-                  color="primary" 
-                  onClick={handleSubmit} 
-                  disabled={isSubmitting}
-                  sx={{ mt: 2, py: 1 }}
-                >
-                  {isSubmitting ? <CircularProgress size={24} /> : "Register Employee"}
-                </Button>
+                <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
+                  <Button 
+                    variant="contained" 
+                    color="primary" 
+                    onClick={handleSubmit} 
+                    disabled={isSubmitting}
+                    sx={{ py: 1, flex: 1 }}
+                  >
+                    {isSubmitting ? <CircularProgress size={24} /> : "Register Employee"}
+                  </Button>
+                  <Button 
+                    variant="outlined" 
+                    color="inherit" 
+                    onClick={handleBack} 
+                    sx={{ py: 1 }}
+                  >
+                    <ArrowBack sx={{ mr: 1 }} />
+                    Back
+                  </Button>
+                </Box>
               </CardContent>
             </Card>
           </Grid>
 
-          {/* Upload Image Container */}
-          <Grid item xs={12} md={4} sx={{ textAlign: "center" }}>
-            <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
-              <Avatar 
-                src={imagePreview || ""} 
-                sx={{ width: 120, height: 120, backgroundColor: "#ccc" }}
-              />
-              <Button 
-                variant="contained" 
-                component="label" 
-                startIcon={<AddCircle />}
-                sx={{ textTransform: "none" }}
-              >
-                Upload Profile Image
-                <input type="file" hidden accept="image/jpeg, image/png" onChange={handleProfileImageChange} />
-              </Button>
-            </Box>
+          <Grid 
+            item 
+            xs={12} 
+            md={4} 
+            sx={{ 
+              textAlign: "center", 
+              display: "flex", 
+              flexDirection: "column", 
+              justifyContent: "center", 
+              alignItems: "center" 
+            }}
+          >
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                fontSize: "20px", 
+                textAlign: "center", 
+                marginBottom: 2, 
+                color: "#555", 
+                fontStyle: "italic" 
+              }}
+            >
+              "Profiles define your digital presence & first impression."
+            </Typography>
+            <Avatar 
+              src={imagePreview || ""} 
+              sx={{ width: 220, height: 220, backgroundColor: "#ccc", marginBottom: 2 }}
+            />
+            <Button 
+              variant="contained" 
+              component="label" 
+              startIcon={<AddCircle />}
+              sx={{ textTransform: "none" }}
+            >
+              Upload Profile Image
+              <input type="file" hidden accept="image/jpeg, image/png" onChange={handleProfileImageChange} />
+            </Button>
           </Grid>
         </Grid>
 
-        {/* Snackbar Notification */}
-        <Snackbar open={notification.open} autoHideDuration={4000} onClose={() => setNotification({ ...notification, open: false })}>
+        <Snackbar 
+          open={notification.open} 
+          autoHideDuration={4000} 
+          onClose={() => setNotification({ ...notification, open: false })}
+          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        >
           <Alert severity={notification.type} onClose={() => setNotification({ ...notification, open: false })}>
             {notification.message}
           </Alert>
